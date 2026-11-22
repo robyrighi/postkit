@@ -216,7 +216,7 @@ export function TextStudio() {
   }
 
   async function prepare() {
-    const ok = await ensureProfile()
+    const ok = await ensureProfile(MODULE)
     if (!ok) return
     setBusy(true)
     try {

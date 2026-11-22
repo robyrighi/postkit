@@ -317,7 +317,7 @@ export function SportCard() {
   }, [base, layout, accent, title, date, stats, badge, fontsOk, sport, t, route, showRoute])
 
   async function prepare() {
-    const ok = await ensureProfile()
+    const ok = await ensureProfile(MODULE)
     if (!ok) return
     setBusy(true)
     try {

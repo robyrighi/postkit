@@ -1,28 +1,61 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react'
 import { useI18n } from '../i18n'
-import { register } from '../lib/api'
+import { register, track } from '../lib/api'
 import { getProfile, saveProfile } from '../lib/visitor'
 
-type Ensure = () => Promise<boolean>
+// Quanti download si possono fare senza registrarsi
+const FREE_DOWNLOADS = 1
+const FREE_KEY = 'pk_free_used'
+
+type Ensure = (module: string) => Promise<boolean>
 const Ctx = createContext<Ensure>(async () => true)
 
-/** Hook: chiede nome ed email solo la prima volta (al primo download). */
+/**
+ * Hook: il primo download è libero; dal secondo chiede nome ed email
+ * (una volta sola). Ogni passaggio viene registrato nelle statistiche.
+ */
 // eslint-disable-next-line react-refresh/only-export-components
 export const useEnsureProfile = () => useContext(Ctx)
+
+function freeUsed(): number {
+  try {
+    return Number(localStorage.getItem(FREE_KEY) || 0)
+  } catch {
+    return 0
+  }
+}
+
+function markFreeUsed() {
+  try {
+    localStorage.setItem(FREE_KEY, String(freeUsed() + 1))
+  } catch {
+    /* ignora */
+  }
+}
 
 export function ProfileGateProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const resolver = useRef<((ok: boolean) => void) | null>(null)
+  const fromModule = useRef('')
 
-  const ensure = useCallback<Ensure>(() => {
+  const ensure = useCallback<Ensure>((module) => {
     if (getProfile()) return Promise.resolve(true)
+    const used = freeUsed()
+    if (used < FREE_DOWNLOADS) {
+      markFreeUsed()
+      track('gate', 'free_download', { from: module, n: used + 1 })
+      return Promise.resolve(true)
+    }
+    fromModule.current = module
+    track('gate', 'shown', { from: module })
     setOpen(true)
     return new Promise<boolean>((res) => {
       resolver.current = res
     })
   }, [])
 
-  const close = (ok: boolean) => {
+  const close = (ok: boolean, newsletter?: boolean) => {
+    track('gate', ok ? 'submit' : 'cancel', ok ? { from: fromModule.current, newsletter: !!newsletter } : { from: fromModule.current })
     setOpen(false)
     resolver.current?.(ok)
     resolver.current = null
@@ -36,7 +69,7 @@ export function ProfileGateProvider({ children }: { children: ReactNode }) {
   )
 }
 
-function GateModal({ onDone }: { onDone: (ok: boolean) => void }) {
+function GateModal({ onDone }: { onDone: (ok: boolean, newsletter?: boolean) => void }) {
   const { t } = useI18n()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -63,7 +96,7 @@ function GateModal({ onDone }: { onDone: (ok: boolean) => void }) {
     }
     saveProfile(profile)
     setBusy(false)
-    onDone(true)
+    onDone(true, news)
   }
 
   return (

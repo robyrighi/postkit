@@ -23,6 +23,17 @@ interface Stats {
   languages: { lang: string; n: number }[]
   feedback: { created_at: string; module: string; score: number; comment: string | null; name: string | null; email: string | null }[]
 }
+interface Funnel {
+  visitors: number
+  tool_open: number
+  upload: number
+  export: number
+  free_download: number
+  gate_shown: number
+  gate_cancel: number
+  gate_submit: number
+  save: number
+}
 interface EventRow {
   created_at: string
   module: string
@@ -57,6 +68,7 @@ const MODULES: Record<string, string> = {
   privacy: '🔒 Privacy',
   app: '📲 App',
   lang: '🌐 Lingua',
+  gate: '✉️ Richiesta nome/email',
 }
 const EVENTS: Record<string, string> = {
   open: 'ha aperto',
@@ -78,6 +90,10 @@ const EVENTS: Record<string, string> = {
   install_dismissed: 'ha rifiutato l’installazione',
   install_dismiss: 'ha chiuso il banner',
   installed: 'installata ✅',
+  free_download: 'ha usato il download libero',
+  shown: 'ha visto',
+  cancel: 'ha annullato',
+  submit: 'ha compilato ✅',
 }
 const PLATFORM: Record<string, string> = {
   ios: '📱 iPhone/iPad',
@@ -253,6 +269,7 @@ function ListBars({ rows }: { rows: { label: string; n: number }[] }) {
 function Dashboard({ session }: { session: Session }) {
   const [tab, setTab] = useState<Tab>('overview')
   const [stats, setStats] = useState<Stats | null>(null)
+  const [funnel, setFunnel] = useState<Funnel | null>(null)
   const [events, setEvents] = useState<EventRow[]>([])
   const [visitors, setVisitors] = useState<VisitorRow[]>([])
   const [error, setError] = useState('')
@@ -266,10 +283,11 @@ function Dashboard({ session }: { session: Session }) {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const [s, e, v] = await Promise.all([
+    const [s, e, v, f] = await Promise.all([
       supabase.rpc('pk_admin_stats', { p_days: 30 }),
       supabase.rpc('pk_admin_events', { p_limit: 500, p_module: modFilter || null, p_visitor: visitorFilter?.id ?? null }),
       supabase.rpc('pk_admin_visitors', { p_limit: 2000 }),
+      supabase.rpc('pk_admin_funnel', { p_days: 30 }),
     ])
     setLoading(false)
     const err = s.error ?? e.error ?? v.error
@@ -281,6 +299,7 @@ function Dashboard({ session }: { session: Session }) {
     setStats(s.data as Stats)
     setEvents((e.data as EventRow[]) ?? [])
     setVisitors((v.data as VisitorRow[]) ?? [])
+    if (!f.error) setFunnel(f.data as Funnel)
     setUpdated(new Date())
   }, [modFilter, visitorFilter])
 
@@ -388,6 +407,24 @@ function Dashboard({ session }: { session: Session }) {
             </div>
             <Bars data={stats.daily} />
           </div>
+          {funnel && (
+            <div className="card">
+              <h3>Imbuto (30 giorni, persone)</h3>
+              <ListBars
+                rows={[
+                  { label: 'Visitatori', n: funnel.visitors },
+                  { label: 'Aprono uno strumento', n: funnel.tool_open },
+                  { label: 'Caricano una foto', n: funnel.upload },
+                  { label: 'Creano un’immagine', n: funnel.export },
+                  { label: 'Download libero', n: funnel.free_download },
+                  { label: 'Vedono nome/email', n: funnel.gate_shown },
+                  { label: 'Annullano', n: funnel.gate_cancel },
+                  { label: 'Si registrano', n: funnel.gate_submit },
+                  { label: 'Salvano', n: funnel.save },
+                ]}
+              />
+            </div>
+          )}
           <div className="admin-grid">
             <div className="card">
               <h3>Strumenti</h3>

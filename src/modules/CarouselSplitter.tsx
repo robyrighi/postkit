@@ -112,7 +112,7 @@ export function CarouselSplitter() {
 
   async function prepare() {
     if (!img) return
-    const ok = await ensureProfile()
+    const ok = await ensureProfile(MODULE)
     if (!ok) return
     setBusy(true)
     try {
