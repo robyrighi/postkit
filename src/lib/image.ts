@@ -5,13 +5,14 @@ export function srcSize(s: Source): { w: number; h: number } {
   return { w: s.width, h: s.height }
 }
 
-/** Carica un file immagine rispettando l'orientamento EXIF. */
-export async function loadImage(file: File): Promise<Source> {
+const isHeic = (f: File) => /heic|heif/i.test(f.type) || /\.(heic|heif)$/i.test(f.name)
+
+async function decode(file: Blob): Promise<Source> {
   if ('createImageBitmap' in window) {
     try {
       return await createImageBitmap(file, { imageOrientation: 'from-image' })
     } catch {
-      /* fallback sotto (es. HEIC su browser che non lo decodificano) */
+      /* fallback sotto */
     }
   }
   const url = URL.createObjectURL(file)
@@ -23,6 +24,22 @@ export async function loadImage(file: File): Promise<Source> {
     return img
   } finally {
     setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+}
+
+/**
+ * Carica un file immagine rispettando l'orientamento EXIF.
+ * Le foto HEIC/HEIF (iPhone) vengono convertite nel browser se non supportate.
+ */
+export async function loadImage(file: File): Promise<Source> {
+  try {
+    return await decode(file)
+  } catch (e) {
+    if (!isHeic(file)) throw e
+    // build "csp" della libreria: compatibile con la Content Security Policy del sito
+    const { heicTo } = await import('heic-to/csp')
+    const jpeg = await heicTo({ blob: file, type: 'image/jpeg', quality: 0.92 })
+    return decode(jpeg)
   }
 }
 

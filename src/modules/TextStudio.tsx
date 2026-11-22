@@ -118,7 +118,7 @@ export function TextStudio() {
       setFraming(defaultFraming)
       setMask(null)
       reset()
-      track(MODULE, 'upload')
+      track(MODULE, 'upload', { sample: /^(sport|text|panorama)\.jpg$/.test(f.name) })
     } catch {
       setError(t('common.openError'))
     }
@@ -222,7 +222,7 @@ export function TextStudio() {
     try {
       const c = compose()
       if (!c) return
-      setFiles([await canvasToFile(c, `postkit-text-${stamp()}.jpg`)])
+      setFiles([await canvasToFile(c, `peakkit-text-${stamp()}.jpg`)])
       track(MODULE, 'export', { format, tpl: tplId, filter, behind })
     } catch {
       setError(t('common.genericError'))
@@ -243,7 +243,7 @@ export function TextStudio() {
       </header>
 
       {!img ? (
-        <FilePick onFile={onFile} />
+        <FilePick onFile={onFile} sample="text.jpg" />
       ) : (
         <div className="workspace">
           <div className={'stage ' + format}>
@@ -411,7 +411,7 @@ export function TextStudio() {
         </div>
       )}
       {error && !img && <p className="error">{error}</p>}
-      {files && <ExportPanel module={MODULE} files={files} zipName="postkit-text.zip" onClose={reset} />}
+      {files && <ExportPanel module={MODULE} files={files} zipName="peakkit-text.zip" onClose={reset} />}
     </section>
   )
 }

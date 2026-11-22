@@ -1,5 +1,5 @@
 import { useI18n, type Lang } from '../i18n'
-import { CONTACT_EMAIL } from '../lib/config'
+import { CONTACT_EMAIL, OWNER } from '../lib/config'
 
 interface Section {
   h: string
@@ -19,10 +19,11 @@ const DOCS: Record<Lang, Doc> = {
     title: 'Privacy e sicurezza',
     lead: 'In breve: le tue foto non lasciano mai il tuo dispositivo. Raccogliamo solo il minimo indispensabile.',
     sections: [
+      { h: 'Titolare del trattamento', p: `${OWNER} · ${CONTACT_EMAIL}` },
       {
         h: 'Le tue foto',
         li: [
-          'Tutte le elaborazioni (ritaglio, filtri, testo, riconoscimento della persona) avvengono nel tuo browser.',
+          'Tutte le elaborazioni (ritaglio, filtri, testo, riconoscimento della persona, lettura dei file GPX/FIT) avvengono nel tuo browser.',
           'Le foto non vengono mai caricate su un server, né salvate su questo sito o altrove. Chiudendo la pagina spariscono.',
           'Per l’effetto “testo dietro la persona” il browser scarica un modello di intelligenza artificiale (MediaPipe, di Google) che lavora sul tuo dispositivo: la foto non viene inviata a Google né a noi.',
         ],
@@ -30,7 +31,8 @@ const DOCS: Record<Lang, Doc> = {
       {
         h: 'Cosa raccogliamo',
         li: [
-          'Nome ed email: solo quando scarichi la prima immagine. Servono a sapere chi usa PostKit ed eventualmente ad avvisarti di novità importanti. Non li vendiamo né li cediamo a nessuno.',
+          'Nome ed email: solo quando scarichi la prima immagine. Servono a sapere chi usa PeakKit. Non li vendiamo né li cediamo a nessuno.',
+          'Email di novità: solo se spunti la casella facoltativa (al massimo qualche email all’anno). Puoi revocare il consenso in ogni momento scrivendo all’indirizzo qui sotto.',
           'Statistiche d’uso: quale strumento apri, quali opzioni scegli, quante immagini crei e salvi, tipo di dispositivo e lingua. Mai il contenuto delle foto o il testo che scrivi.',
           'Valutazioni: la faccina e il commento, se decidi di lasciarli.',
         ],
@@ -55,10 +57,11 @@ const DOCS: Record<Lang, Doc> = {
     title: 'Privacy and security',
     lead: 'In short: your photos never leave your device. We collect only the bare minimum.',
     sections: [
+      { h: 'Data controller', p: `${OWNER} · ${CONTACT_EMAIL}` },
       {
         h: 'Your photos',
         li: [
-          'All processing (cropping, filters, text, person detection) happens in your browser.',
+          'All processing (cropping, filters, text, person detection, reading GPX/FIT files) happens in your browser.',
           'Photos are never uploaded to a server or stored on this site or anywhere else. They disappear when you close the page.',
           'For the “text behind the person” effect, your browser downloads an AI model (MediaPipe, by Google) that runs on your device: the photo is not sent to Google or to us.',
         ],
@@ -66,7 +69,8 @@ const DOCS: Record<Lang, Doc> = {
       {
         h: 'What we collect',
         li: [
-          'Name and email: only when you download your first image. They help us know who uses PostKit and, occasionally, tell you about important updates. We never sell or share them.',
+          'Name and email: only when you download your first image. They help us know who uses PeakKit. We never sell or share them.',
+          'Update emails: only if you tick the optional box (a few emails a year at most). You can withdraw your consent at any time by writing to the address below.',
           'Usage statistics: which tool you open, which options you choose, how many images you create and save, device type and language. Never the content of your photos or the text you write.',
           'Ratings: the face and comment, if you choose to leave them.',
         ],
@@ -91,10 +95,11 @@ const DOCS: Record<Lang, Doc> = {
     title: 'Datenschutz und Sicherheit',
     lead: 'Kurz gesagt: Deine Fotos verlassen nie dein Gerät. Wir erfassen nur das Nötigste.',
     sections: [
+      { h: 'Verantwortlicher', p: `${OWNER} · ${CONTACT_EMAIL}` },
       {
         h: 'Deine Fotos',
         li: [
-          'Die gesamte Bearbeitung (Zuschnitt, Filter, Text, Personenerkennung) findet in deinem Browser statt.',
+          'Die gesamte Bearbeitung (Zuschnitt, Filter, Text, Personenerkennung, Lesen von GPX/FIT-Dateien) findet in deinem Browser statt.',
           'Fotos werden nie auf einen Server hochgeladen und weder auf dieser Website noch anderswo gespeichert. Beim Schliessen der Seite sind sie weg.',
           'Für den Effekt «Text hinter der Person» lädt dein Browser ein KI-Modell (MediaPipe von Google), das auf deinem Gerät läuft: Das Foto wird weder an Google noch an uns gesendet.',
         ],
@@ -102,7 +107,8 @@ const DOCS: Record<Lang, Doc> = {
       {
         h: 'Was wir erfassen',
         li: [
-          'Name und E-Mail: nur beim Herunterladen des ersten Bildes. So wissen wir, wer PostKit nutzt, und können dich gelegentlich über wichtige Neuigkeiten informieren. Wir verkaufen oder teilen sie nie.',
+          'Name und E-Mail: nur beim Herunterladen des ersten Bildes. So wissen wir, wer PeakKit nutzt. Wir verkaufen oder teilen sie nie.',
+          'E-Mails zu Neuigkeiten: nur wenn du das optionale Kästchen ankreuzt (höchstens ein paar E-Mails pro Jahr). Du kannst die Einwilligung jederzeit widerrufen, indem du an die Adresse unten schreibst.',
           'Nutzungsstatistiken: welches Werkzeug du öffnest, welche Optionen du wählst, wie viele Bilder du erstellst und speicherst, Gerätetyp und Sprache. Nie der Inhalt deiner Fotos oder der Text, den du schreibst.',
           'Bewertungen: das Gesicht und der Kommentar, falls du sie hinterlässt.',
         ],
@@ -127,10 +133,11 @@ const DOCS: Record<Lang, Doc> = {
     title: 'Confidentialité et sécurité',
     lead: 'En bref : tes photos ne quittent jamais ton appareil. Nous collectons le strict minimum.',
     sections: [
+      { h: 'Responsable du traitement', p: `${OWNER} · ${CONTACT_EMAIL}` },
       {
         h: 'Tes photos',
         li: [
-          'Tous les traitements (recadrage, filtres, texte, détection de la personne) se font dans ton navigateur.',
+          'Tous les traitements (recadrage, filtres, texte, détection de la personne, lecture des fichiers GPX/FIT) se font dans ton navigateur.',
           'Les photos ne sont jamais envoyées sur un serveur, ni enregistrées sur ce site ou ailleurs. Elles disparaissent quand tu fermes la page.',
           'Pour l’effet « texte derrière la personne », ton navigateur télécharge un modèle d’intelligence artificielle (MediaPipe, de Google) qui fonctionne sur ton appareil : la photo n’est envoyée ni à Google ni à nous.',
         ],
@@ -138,7 +145,8 @@ const DOCS: Record<Lang, Doc> = {
       {
         h: 'Ce que nous collectons',
         li: [
-          'Nom et e-mail : uniquement quand tu télécharges ta première image. Ils nous permettent de savoir qui utilise PostKit et, parfois, de t’informer de nouveautés importantes. Nous ne les vendons ni ne les cédons jamais.',
+          'Nom et e-mail : uniquement quand tu télécharges ta première image. Ils nous permettent de savoir qui utilise PeakKit. Nous ne les vendons ni ne les cédons jamais.',
+          'E-mails de nouveautés : seulement si tu coches la case facultative (quelques e-mails par an au maximum). Tu peux retirer ton consentement à tout moment en écrivant à l’adresse ci-dessous.',
           'Statistiques d’utilisation : quel outil tu ouvres, quelles options tu choisis, combien d’images tu crées et enregistres, type d’appareil et langue. Jamais le contenu de tes photos ni le texte que tu écris.',
           'Évaluations : le visage et le commentaire, si tu choisis de les laisser.',
         ],

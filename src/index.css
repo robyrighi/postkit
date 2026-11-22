@@ -1352,3 +1352,17 @@ details.more[open] > :not(summary) {
 .modal .row h2 {
   margin: 0;
 }
+
+.sample-btn {
+  margin-top: 10px;
+  border-color: rgba(255, 122, 47, 0.45);
+}
+
+.import-btn {
+  width: 100%;
+  border-style: dashed;
+  border-color: rgba(255, 122, 47, 0.55);
+}
+.ok.small {
+  font-size: 0.85rem;
+}

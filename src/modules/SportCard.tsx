@@ -20,6 +20,7 @@ import {
 } from '../lib/image'
 import { drawBadge, drawOverlay, loadAllFonts, pickContrast } from '../lib/templates'
 import { fmtDuration, parseDuration } from '../lib/time'
+import { drawRoute, readActivityFile } from '../lib/activityFile'
 
 const MODULE = 'sport'
 
@@ -60,6 +61,10 @@ export function SportCard() {
   const [elev, setElev] = useState('')
   const [hr, setHr] = useState('')
   const [badge, setBadge] = useState(true)
+  const [route, setRoute] = useState<[number, number][] | null>(null)
+  const [showRoute, setShowRoute] = useState(true)
+  const [importMsg, setImportMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const actInput = useRef<HTMLInputElement>(null)
   const [fontsOk, setFontsOk] = useState(false)
   const [files, setFiles] = useState<File[] | null>(null)
   const [busy, setBusy] = useState(false)
@@ -86,9 +91,31 @@ export function SportCard() {
       setImg(await loadImage(f))
       setFraming(defaultFraming)
       reset()
-      track(MODULE, 'upload')
+      track(MODULE, 'upload', { sample: /^(sport|text|panorama)\.jpg$/.test(f.name) })
     } catch {
       setError(t('common.openError'))
+    }
+  }
+
+  async function onActivityFile(f: File) {
+    try {
+      const a = await readActivityFile(f)
+      if (a.distanceKm) setKm(dec(a.distanceKm.toFixed(2).replace(/0$/, '')))
+      if (a.durationSec) setTime(fmtDuration(a.durationSec))
+      setElev(a.elevGain ? String(Math.round(a.elevGain)) : '')
+      setHr(a.avgHr ? String(Math.round(a.avgHr)) : '')
+      if (a.date) setDate(a.date.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' }))
+      if (a.sport) setSport(a.sport)
+      if (a.name && titleRaw === null) setTitle(a.name.slice(0, 60))
+      setRoute(a.points.length > 1 ? a.points : null)
+      setShowRoute(true)
+      setImportMsg({ ok: true, text: t('sport.importOk', { km: dec((a.distanceKm ?? 0).toFixed(1)), n: a.points.length }) })
+      reset()
+      track(MODULE, 'activity_import', { type: f.name.split('.').pop()?.toLowerCase(), points: a.points.length, sport: a.sport })
+    } catch (e) {
+      console.warn(e)
+      setImportMsg({ ok: false, text: t('sport.importError') })
+      track(MODULE, 'activity_import_error', { type: f.name.split('.').pop()?.toLowerCase() })
     }
   }
 
@@ -150,6 +177,15 @@ export function SportCard() {
       }
     }
 
+    const rw = Math.max(3, w * 0.0055)
+    // il percorso occupa al massimo ~60% della larghezza, ancorato in basso nello spazio libero
+    const routeIn = (y0: number, y1: number) => {
+      if (!route || !showRoute || y1 - y0 < w * 0.15) return
+      const bw = w * 0.6
+      const bh = Math.min(y1 - y0, w * 0.55)
+      drawRoute(ctx, route, { x: (w - bw) / 2, y: y1 - bh, w: bw, h: bh }, accent, rw)
+    }
+
     if (layout === 'classic') {
       drawOverlay(ctx, w, h, 'bottom', 1.1)
       const cols = Math.min(stats.length, stats.length > 3 ? 2 : 3) || 1
@@ -157,6 +193,7 @@ export function SportCard() {
       const valPx = w * (cols === 3 ? 0.075 : 0.085)
       const rowH = valPx * 1.75
       const statsTop = h - m - rows * rowH
+      routeIn(m * 1.2, statsTop - w * 0.27)
       ctx.textAlign = 'left'
       ctx.fillStyle = accent
       ctx.font = `700 ${Math.round(w * 0.03)}px "Montserrat", sans-serif`
@@ -204,6 +241,7 @@ export function SportCard() {
       setSpacing(ctx, 0)
       ctx.textAlign = 'left'
       ctx.fillText(`${title} — ${date}`, m, yy + w * 0.01, w - 2 * m)
+      routeIn(yy + w * 0.08, h - m * 1.5)
     } else if (layout === 'poster') {
       drawOverlay(ctx, w, h, 'top', 0.9)
       ctx.textAlign = 'center'
@@ -226,6 +264,7 @@ export function SportCard() {
       const n = Math.max(1, Math.min(4, stats.length))
       const bandH = w * 0.27
       const by = h - bandH - m * 0.6
+      routeIn(m + px * 0.85 + w * 0.12, by - w * 0.08)
       badgeBottom = by - w * 0.005
       ctx.fillStyle = accent
       ctx.fillRect(m * 0.6, by, w - m * 1.2, bandH)
@@ -237,6 +276,7 @@ export function SportCard() {
       })
     } else {
       drawOverlay(ctx, w, h, 'bottom', 0.8)
+      routeIn(m * 1.2, h - m - w * 0.3)
       ctx.textAlign = 'center'
       ctx.fillStyle = '#fff'
       ctx.font = `700 ${Math.round(w * 0.05)}px "Inter", sans-serif`
@@ -264,7 +304,7 @@ export function SportCard() {
     p.height = c.height
     ctx2d(p).drawImage(c, 0, 0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [base, layout, accent, title, date, stats, badge, fontsOk, sport, t])
+  }, [base, layout, accent, title, date, stats, badge, fontsOk, sport, t, route, showRoute])
 
   async function prepare() {
     const ok = await ensureProfile()
@@ -273,7 +313,7 @@ export function SportCard() {
     try {
       const c = compose()
       if (!c) return
-      setFiles([await canvasToFile(c, `postkit-sport-${stamp()}.jpg`)])
+      setFiles([await canvasToFile(c, `peakkit-sport-${stamp()}.jpg`)])
       track(MODULE, 'export', { format, layout, sport, filter, km: num(km), time })
     } catch {
       setError(t('common.genericError'))
@@ -292,7 +332,7 @@ export function SportCard() {
       </header>
 
       {!img ? (
-        <FilePick onFile={onFile} label={t('sport.pick')} />
+        <FilePick onFile={onFile} label={t('sport.pick')} sample="sport.jpg" />
       ) : (
         <div className="workspace">
           <div className={'stage ' + format}>
@@ -315,6 +355,29 @@ export function SportCard() {
             </Field>
 
             <Field label={t('sport.step2')}>
+              <input
+                ref={actInput}
+                type="file"
+                accept=".gpx,.fit,application/gpx+xml"
+                hidden
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) onActivityFile(f)
+                  e.target.value = ''
+                }}
+              />
+              <button type="button" className="btn ghost import-btn" onClick={() => actInput.current?.click()}>
+                {t('sport.import')}
+              </button>
+              {importMsg && <p className={importMsg.ok ? 'ok small' : 'error small'}>{importMsg.text}</p>}
+              {!importMsg && <p className="muted small">{t('sport.importHint')}</p>}
+              {route && (
+                <label className="toggle">
+                  <input type="checkbox" checked={showRoute} onChange={(e) => (setShowRoute(e.target.checked), reset())} />
+                  <span className="toggle-ui" />
+                  <span>{t('sport.showRoute')}</span>
+                </label>
+              )}
               <div className="grid2">
                 <label>
                   {t('sport.distance')}
@@ -408,7 +471,7 @@ export function SportCard() {
         </div>
       )}
       {error && !img && <p className="error">{error}</p>}
-      {files && <ExportPanel module={MODULE} files={files} zipName="postkit-sport.zip" onClose={reset} />}
+      {files && <ExportPanel module={MODULE} files={files} zipName="peakkit-sport.zip" onClose={reset} />}
     </section>
   )
 }

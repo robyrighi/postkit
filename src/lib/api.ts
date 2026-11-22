@@ -13,10 +13,10 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 async function rpc(fn: string, args: Record<string, unknown>) {
   try {
     const { error } = await supabase.rpc(fn, args)
-    if (error) console.warn(`[postkit] ${fn}:`, error.message)
+    if (error) console.warn(`[peakkit] ${fn}:`, error.message)
     return !error
   } catch (e) {
-    console.warn(`[postkit] ${fn}:`, e)
+    console.warn(`[peakkit] ${fn}:`, e)
     return false
   }
 }
@@ -34,8 +34,13 @@ export function track(module: string, event: string, meta?: Record<string, unkno
   return rpc('pk_track', { p_id: getVisitorId(), p_module: module, p_event: event, p_meta: meta ?? null })
 }
 
-export async function register(name: string, email: string) {
-  const { error } = await supabase.rpc('pk_register', { p_id: getVisitorId(), p_name: name, p_email: email })
+export async function register(name: string, email: string, newsletter: boolean) {
+  const { error } = await supabase.rpc('pk_register', {
+    p_id: getVisitorId(),
+    p_name: name,
+    p_email: email,
+    p_newsletter: newsletter,
+  })
   if (error) throw new Error(error.message)
 }
 

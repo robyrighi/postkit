@@ -78,7 +78,7 @@ function Shell() {
     const p = getProfile()
     try {
       if (p && localStorage.getItem('pk_pending_register')) {
-        register(p.name, p.email)
+        register(p.name, p.email, !!p.newsletter)
           .then(() => localStorage.removeItem('pk_pending_register'))
           .catch(() => {})
       }
@@ -100,7 +100,7 @@ function Shell() {
         <a href="#/" className="brand">
           <Logo size={38} />
           <span className="brand-name">
-            Post<span className="grad">Kit</span>
+            Peak<span className="grad">Kit</span>
           </span>
         </a>
         <div className="nav-right">

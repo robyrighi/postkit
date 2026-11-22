@@ -1,7 +1,7 @@
 {
-  "name": "PostKit — foto pronte per i social",
-  "short_name": "PostKit",
-  "description": "Card sport, testo sulle foto e panoramiche divise per Instagram. Gratis, le foto restano sul tuo dispositivo.",
+  "name": "PeakKit — foto pronte per i social",
+  "short_name": "PeakKit",
+  "description": "Card sport con percorso GPX, testo sulle foto e panoramiche divise per Instagram. Gratis, le foto restano sul tuo dispositivo.",
   "id": "/postkit/",
   "start_url": "./",
   "scope": "./",

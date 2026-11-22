@@ -1,0 +1,22 @@
+name: Keep-alive Supabase
+
+# Il piano gratuito di Supabase mette in pausa i progetti inattivi.
+# Una chiamata leggera al giorno lo tiene sveglio (la chiave è quella pubblica del sito).
+on:
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping
+        run: |
+          curl -fsS -X POST "https://ztgehpjliohcqtsuzdbq.supabase.co/rest/v1/rpc/pk_ping" \
+            -H "apikey: sb_publishable_FSqohYS9spPqI_2oEbVENA_YzHhI4-7" \
+            -H "Content-Type: application/json" \
+            -d '{}'

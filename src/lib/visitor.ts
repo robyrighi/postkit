@@ -6,6 +6,7 @@ const PROFILE_KEY = 'pk_profile'
 export interface Profile {
   name: string
   email: string
+  newsletter?: boolean
 }
 
 function readCookie(name: string): string | null {

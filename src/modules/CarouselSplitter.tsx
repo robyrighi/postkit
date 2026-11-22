@@ -56,7 +56,7 @@ export function CarouselSplitter() {
       setFraming(defaultFraming)
       setFiles(null)
       const s = srcSize(im)
-      track(MODULE, 'upload', { w: s.w, h: s.h })
+      track(MODULE, 'upload', { w: s.w, h: s.h, sample: /^(sport|text|panorama)\.jpg$/.test(f.name) })
     } catch {
       setError(t('common.openError'))
     }
@@ -119,7 +119,7 @@ export function CarouselSplitter() {
       const strip = renderStrip(1)
       const sl = SLIDE[ratio]
       const out: File[] = []
-      const base = `postkit-carousel-${stamp()}`
+      const base = `peakkit-carousel-${stamp()}`
       for (let i = 0; i < slides; i++) {
         const c = makeCanvas(sl.w, sl.h)
         ctx2d(c).drawImage(strip, i * sl.w, 0, sl.w, sl.h, 0, 0, sl.w, sl.h)
@@ -144,7 +144,7 @@ export function CarouselSplitter() {
       </header>
 
       {!img ? (
-        <FilePick onFile={onFile} label={t('car.pick')} />
+        <FilePick onFile={onFile} label={t('car.pick')} sample="panorama.jpg" />
       ) : (
         <div className="workspace">
           <div className="stage strip">
@@ -213,7 +213,7 @@ export function CarouselSplitter() {
       )}
       {error && !img && <p className="error">{error}</p>}
 
-      {files && <ExportPanel module={MODULE} files={files} zipName="postkit-carousel.zip" onClose={reset} />}
+      {files && <ExportPanel module={MODULE} files={files} zipName="peakkit-carousel.zip" onClose={reset} />}
     </section>
   )
 }

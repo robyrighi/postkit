@@ -38,6 +38,7 @@ interface VisitorRow {
   id: string
   name: string | null
   email: string | null
+  newsletter?: boolean
   platform: string | null
   lang: string | null
   visits: number
@@ -111,15 +112,15 @@ function metaText(m: Record<string, unknown> | null): string {
 }
 
 function downloadCsv(rows: VisitorRow[]) {
-  const head = ['nome', 'email', 'piattaforma', 'lingua', 'visite', 'immagini_create', 'salvataggi', 'prima_visita', 'ultima_visita']
+  const head = ['nome', 'email', 'newsletter', 'piattaforma', 'lingua', 'visite', 'immagini_create', 'salvataggi', 'prima_visita', 'ultima_visita']
   const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`
   const lines = rows
     .filter((r) => r.email)
-    .map((r) => [r.name, r.email, r.platform, r.lang, r.visits, r.exports, r.saves, r.first_seen, r.last_seen].map(esc).join(';'))
+    .map((r) => [r.name, r.email, r.newsletter ? 'si' : 'no', r.platform, r.lang, r.visits, r.exports, r.saves, r.first_seen, r.last_seen].map(esc).join(';'))
   const blob = new Blob(['﻿' + [head.join(';'), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = `postkit-utenti-${new Date().toISOString().slice(0, 10)}.csv`
+  a.download = `peakkit-utenti-${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   setTimeout(() => URL.revokeObjectURL(a.href), 3000)
 }
@@ -496,7 +497,11 @@ function Dashboard({ session }: { session: Session }) {
                   <tr key={v.id} onClick={() => showVisitorLog(v)} className="clickable" title="Mostra attività">
                     <td>
                       <strong>{who(v)}</strong>
-                      {v.email && <span className="muted small block">{v.email}</span>}
+                      {v.email && (
+                        <span className="muted small block">
+                          {v.email} {v.newsletter ? '· 📬 newsletter' : ''}
+                        </span>
+                      )}
                     </td>
                     <td>
                       {PLATFORM[v.platform ?? 'other'] ?? v.platform} {v.lang ? `· ${v.lang.slice(0, 2).toUpperCase()}` : ''}

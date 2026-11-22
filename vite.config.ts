@@ -44,7 +44,9 @@ function precache(): Plugin {
       outDir = c.build.outDir
     },
     generateBundle(_o, bundle) {
-      files = Object.keys(bundle).filter((f) => /\.(js|css|woff2|svg|png|jpg|webmanifest)$/.test(f) && !f.endsWith('.map'))
+      files = Object.keys(bundle).filter(
+        (f) => /\.(js|css|woff2|svg|png|jpg|webmanifest)$/.test(f) && !f.endsWith('.map') && !f.includes('heic'),
+      )
     },
     closeBundle() {
       const extra = ['icons/icon-192.png', 'icons/icon-512.png', 'icons/logo.svg', 'icons/apple-touch-icon.png',

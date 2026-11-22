@@ -65,10 +65,12 @@ export function FilePick({
   onFile,
   label,
   compact = false,
+  sample,
 }: {
   onFile: (f: File) => void
   label?: string
   compact?: boolean
+  sample?: string // foto d'esempio (percorso in public/samples)
 }) {
   const ref = useRef<HTMLInputElement>(null)
   const { t } = useI18n()
@@ -80,7 +82,7 @@ export function FilePick({
       onDrop={(e) => {
         e.preventDefault()
         const f = e.dataTransfer.files?.[0]
-        if (f && f.type.startsWith('image/')) onFile(f)
+        if (f && (f.type.startsWith('image/') || /\.(heic|heif)$/i.test(f.name))) onFile(f)
       }}
       role="button"
       tabIndex={0}
@@ -89,7 +91,7 @@ export function FilePick({
       <input
         ref={ref}
         type="file"
-        accept="image/*"
+        accept="image/*,.heic,.heif"
         hidden
         onChange={(e) => {
           const f = e.target.files?.[0]
@@ -100,6 +102,20 @@ export function FilePick({
       <span className="drop-icon">🖼️</span>
       <span>{label ?? t('common.pickPhoto')}</span>
       {!compact && <span className="muted small">{t('common.pickHint')}</span>}
+      {!compact && sample && (
+        <button
+          type="button"
+          className="btn ghost small sample-btn"
+          onClick={async (e) => {
+            e.stopPropagation()
+            const res = await fetch(`${import.meta.env.BASE_URL}samples/${sample}`)
+            const blob = await res.blob()
+            onFile(new File([blob], sample, { type: 'image/jpeg' }))
+          }}
+        >
+          ✨ {t('common.trySample')}
+        </button>
+      )}
     </div>
   )
 }

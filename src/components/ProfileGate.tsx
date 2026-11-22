@@ -41,6 +41,7 @@ function GateModal({ onDone }: { onDone: (ok: boolean) => void }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [consent, setConsent] = useState(false)
+  const [news, setNews] = useState(false)
   const [busy, setBusy] = useState(false)
 
   const valid = name.trim().length >= 2 && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()) && consent
@@ -49,9 +50,9 @@ function GateModal({ onDone }: { onDone: (ok: boolean) => void }) {
     e.preventDefault()
     if (!valid) return
     setBusy(true)
-    const profile = { name: name.trim(), email: email.trim().toLowerCase() }
+    const profile = { name: name.trim(), email: email.trim().toLowerCase(), newsletter: news }
     try {
-      await register(profile.name, profile.email)
+      await register(profile.name, profile.email, news)
     } catch {
       // Rete assente o errore: non blocchiamo l'utente, riproveremo alla prossima visita
       try {
@@ -95,6 +96,10 @@ function GateModal({ onDone }: { onDone: (ok: boolean) => void }) {
             </a>
             {t('gate.consent2')}
           </span>
+        </label>
+        <label className="check">
+          <input type="checkbox" checked={news} onChange={(e) => setNews(e.target.checked)} />
+          <span>{t('gate.newsletter')}</span>
         </label>
         <div className="row end">
           <button type="button" className="btn ghost" onClick={() => onDone(false)} disabled={busy}>

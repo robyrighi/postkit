@@ -173,3 +173,13 @@ $$;
 -- pk_admin_visitors(p_limit)        → tutti i visitatori (anche anonimi) con riepilogo
 -- Tutte iniziano con: if not public.pk_is_admin() then raise exception 'not authorized'
 -- e sono eseguibili solo dal ruolo "authenticated" (definizione completa nel progetto Supabase).
+
+-- ---------- Newsletter (consenso separato e facoltativo) ----------
+alter table public.visitors add column if not exists newsletter boolean not null default false;
+alter table public.visitors add column if not exists newsletter_at timestamptz;
+-- pk_register(p_id, p_name, p_email, p_newsletter boolean): salva anche il consenso con data
+
+-- ---------- Keep-alive ----------
+create or replace function public.pk_ping() returns int
+language sql stable security definer set search_path = '' as $$ select 1 $$;
+grant execute on function public.pk_ping() to anon;

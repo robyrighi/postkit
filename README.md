@@ -1,4 +1,6 @@
-# PostKit
+# PeakKit
+
+> Repository: `robyrighi/postkit` (nome storico).
 
 **Foto pronte per i social, in 30 secondi.** Gratis, senza app, e le foto non lasciano mai il tuo dispositivo.
 
@@ -6,11 +8,12 @@
 
 | Strumento | Cosa fa |
 |---|---|
-| 🏃 **Card sport** | Foto + distanza, tempo, passo/velocità, dislivello e FC in 4 impaginazioni (corsa, trail, sci di fondo, bici, escursione) |
+| 🏃 **Card sport** | Foto + distanza, tempo, passo/velocità, dislivello e FC in 4 impaginazioni (corsa, trail, sci di fondo, bici, escursione). **Import GPX/FIT** da Garmin/Strava: dati compilati da soli e percorso disegnato sulla card |
 | ✍️ **Aggiungi testo alle foto** | 7 stili tipografici, 9 posizioni rapide o trascinamento libero, e l'effetto *testo dietro la persona* con IA nel browser |
 | 🎞️ **Dividi la panoramica** | Divide una foto panoramica in 2–10 slide (4:5 o 1:1) che su Instagram scorrono come un'unica immagine |
 
 Lingue: italiano, tedesco, francese, inglese (rilevamento automatico + selettore).
+Ogni strumento ha "Prova con una foto d'esempio". Le foto HEIC dell'iPhone vengono convertite nel browser.
 
 Ogni strumento ha 8 filtri (B/N, vivido, caldo, freddo, matte, pellicola…), zoom e posizionamento.
 
@@ -25,7 +28,7 @@ Ogni strumento ha 8 filtri (B/N, vivido, caldo, freddo, matte, pellicola…), zo
 
 ## App
 
-PostKit è una **PWA**: si installa sulla schermata Home (Android: pulsante "Installa l'app"; iPhone: Condividi → Aggiungi alla schermata Home), si apre a tutto schermo e funziona anche offline. Il service worker (`public/sw.js`) mette in cache solo i file dell'app, mai le foto.
+PeakKit è una **PWA**: si installa sulla schermata Home (Android: pulsante "Installa l'app"; iPhone: Condividi → Aggiungi alla schermata Home), si apre a tutto schermo e funziona anche offline. Il service worker (`public/sw.js`) mette in cache solo i file dell'app, mai le foto.
 
 ## Salvataggio
 
@@ -67,9 +70,15 @@ In alternativa, nella dashboard Supabase → **Table Editor** o **SQL Editor**:
 
 Lo schema del database è in `supabase/schema.sql`.
 
+## Manutenzione
+
+- `.github/workflows/keepalive.yml`: ping giornaliero a Supabase (il piano gratuito mette in pausa i progetti inattivi). GitHub disattiva i workflow pianificati dopo 60 giorni senza attività sul repository: in quel caso basta riattivarlo da *Actions*.
+
 ## Crediti
 
-Foto d'esempio in home: [Unsplash](https://unsplash.com) (Unsplash License), tramite la raccolta [ServiceStack/images](https://github.com/ServiceStack/images).
+Librerie: React, Supabase, MediaPipe (Apache-2.0), JSZip, fit-file-parser (MIT), heic-to (LGPL-3.0, caricata solo per le foto HEIC), Fontsource.
+
+Foto d'esempio: [Unsplash](https://unsplash.com) (Unsplash License), tramite la raccolta [ServiceStack/images](https://github.com/ServiceStack/images).
 
 ## Licenza
 
