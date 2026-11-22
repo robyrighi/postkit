@@ -6,9 +6,11 @@
 
 | Strumento | Cosa fa |
 |---|---|
-| 🎞️ **Carosello senza cuciture** | Divide una foto panoramica in 2–10 slide (4:5 o 1:1) che su Instagram scorrono come un'unica immagine |
-| ✍️ **Testo da professionisti** | 7 stili tipografici curati, formati storia/post/quadrato, e l'effetto *testo dietro la persona* con IA nel browser |
-| 🏃 **Card della tua uscita** | Foto + distanza, tempo, passo/velocità, dislivello e FC in 4 impaginazioni (corsa, trail, sci di fondo, bici, escursione) |
+| 🏃 **Card sport** | Foto + distanza, tempo, passo/velocità, dislivello e FC in 4 impaginazioni (corsa, trail, sci di fondo, bici, escursione) |
+| ✍️ **Aggiungi testo alle foto** | 7 stili tipografici, 9 posizioni rapide o trascinamento libero, e l'effetto *testo dietro la persona* con IA nel browser |
+| 🎞️ **Dividi la panoramica** | Divide una foto panoramica in 2–10 slide (4:5 o 1:1) che su Instagram scorrono come un'unica immagine |
+
+Lingue: italiano, tedesco, francese, inglese (rilevamento automatico + selettore).
 
 Ogni strumento ha 8 filtri (B/N, vivido, caldo, freddo, matte, pellicola…), zoom e posizionamento.
 
@@ -26,7 +28,7 @@ Ogni strumento ha 8 filtri (B/N, vivido, caldo, freddo, matte, pellicola…), zo
 | Dispositivo | Comportamento |
 |---|---|
 | iPhone / Android | Menu di condivisione nativo → "Salva immagine/i" nella galleria (anche più immagini insieme, niente zip) |
-| Computer | Download diretto; più immagini → ZIP oppure singole |
+| Desktop | Download diretto; più immagini → ZIP oppure singole |
 
 ## Sviluppo
 
@@ -40,9 +42,15 @@ Stack: Vite + React + TypeScript · Supabase · MediaPipe Tasks Vision (Apache-2
 
 Il deploy su GitHub Pages è automatico a ogni push su `main` (`.github/workflows/deploy.yml`).
 
-## Statistiche (per il proprietario)
+## Area admin
 
-Nella dashboard Supabase → **Table Editor** o **SQL Editor**:
+`https://robyrighi.github.io/postkit/#/admin` — accesso con codice via email, solo per le email nella tabella `admins`.
+Panoramica, grafico 30 giorni, registro attività (chi ha fatto cosa, anche prima di registrarsi), utenti, feedback, export CSV.
+Il controllo è fatto nel database: senza email autorizzata le funzioni rispondono `not authorized`.
+
+## Statistiche dalla dashboard Supabase
+
+In alternativa, nella dashboard Supabase → **Table Editor** o **SQL Editor**:
 
 | Vista | Contenuto |
 |---|---|
@@ -54,6 +62,10 @@ Nella dashboard Supabase → **Table Editor** o **SQL Editor**:
 | `stats_ratings` | Media voti per strumento |
 
 Lo schema del database è in `supabase/schema.sql`.
+
+## Crediti
+
+Foto d'esempio in home: [Unsplash](https://unsplash.com) (Unsplash License), tramite la raccolta [ServiceStack/images](https://github.com/ServiceStack/images).
 
 ## Licenza
 

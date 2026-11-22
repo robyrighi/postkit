@@ -6,9 +6,8 @@ export const SUPABASE_KEY =
   import.meta.env.VITE_SUPABASE_KEY ?? 'sb_publishable_FSqohYS9spPqI_2oEbVENA_YzHhI4-7'
 
 export const APP_NAME = 'PostKit'
-export const REPO_URL = 'https://github.com/robyrighi/postkit'
-// Contatto mostrato nella pagina privacy (lascia vuoto per usare le issue GitHub)
-export const CONTACT_EMAIL = ''
+// Contatto del sito (pagina privacy e area admin)
+export const CONTACT_EMAIL = 'robyrighi@outlook.com'
 
 export const FORMATS = {
   story: { w: 1080, h: 1920, label: 'Storia 9:16' },

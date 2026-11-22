@@ -2,8 +2,10 @@ import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_KEY, SUPABASE_URL } from './config'
 import { getVisitorId, platformLabel } from './visitor'
 
+// La sessione viene salvata solo se l'amministratore fa login nell'area admin.
+// I visitatori normali non hanno mai una sessione.
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: false },
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'pk_admin_auth' },
 })
 
 // Tutte le chiamate di tracking sono "fire and forget": un errore di rete non

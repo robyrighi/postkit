@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { ExportPanel } from '../components/ExportPanel'
-import { FilePick, Field, Segmented, Slider } from '../components/Controls'
+import { Field, FilePick, FilterChips, Segmented, Slider } from '../components/Controls'
 import { useEnsureProfile } from '../components/ProfileGate'
+import { useI18n } from '../i18n'
 import { track } from '../lib/api'
 import { canvasToFile, stamp } from '../lib/exporter'
 import {
@@ -9,7 +10,6 @@ import {
   ctx2d,
   defaultFraming,
   drawCover,
-  FILTERS,
   loadImage,
   makeCanvas,
   srcSize,
@@ -31,6 +31,7 @@ function suggestSlides(img: Source, ratio: Ratio) {
 }
 
 export function CarouselSplitter() {
+  const { t } = useI18n()
   const [img, setImg] = useState<Source | null>(null)
   const [ratio, setRatio] = useState<Ratio>('post')
   const [slides, setSlides] = useState(3)
@@ -54,9 +55,10 @@ export function CarouselSplitter() {
       setSlides(suggestSlides(im, ratio))
       setFraming(defaultFraming)
       setFiles(null)
-      track(MODULE, 'upload')
+      const s = srcSize(im)
+      track(MODULE, 'upload', { w: s.w, h: s.h })
     } catch {
-      setError('Non riesco ad aprire questa foto. Prova con un JPG o PNG.')
+      setError(t('common.openError'))
     }
   }
 
@@ -117,7 +119,7 @@ export function CarouselSplitter() {
       const strip = renderStrip(1)
       const sl = SLIDE[ratio]
       const out: File[] = []
-      const base = `postkit-carosello-${stamp()}`
+      const base = `postkit-carousel-${stamp()}`
       for (let i = 0; i < slides; i++) {
         const c = makeCanvas(sl.w, sl.h)
         ctx2d(c).drawImage(strip, i * sl.w, 0, sl.w, sl.h, 0, 0, sl.w, sl.h)
@@ -126,24 +128,23 @@ export function CarouselSplitter() {
       setFiles(out)
       track(MODULE, 'export', { slides, ratio, filter })
     } catch {
-      setError('Qualcosa è andato storto durante la preparazione. Riprova.')
+      setError(t('common.genericError'))
     } finally {
       setBusy(false)
     }
   }
 
+  const reset = () => setFiles(null)
+
   return (
     <section className="module">
       <header className="module-head">
-        <h1>Carosello senza cuciture</h1>
-        <p className="muted">
-          Una foto panoramica diventa più slide da sfogliare su Instagram. Chi scorre vede l’immagine continuare da una slide
-          all’altra.
-        </p>
+        <h1>{t('car.title')}</h1>
+        <p className="muted">{t('car.lead')}</p>
       </header>
 
       {!img ? (
-        <FilePick onFile={onFile} label="Scegli una foto panoramica" />
+        <FilePick onFile={onFile} label={t('car.pick')} />
       ) : (
         <div className="workspace">
           <div className="stage strip">
@@ -151,75 +152,60 @@ export function CarouselSplitter() {
           </div>
 
           <div className="panel">
-            <Field label="1 · Formato slide">
+            <Field label={t('car.step1')}>
               <Segmented
                 value={ratio}
                 onChange={(v) => {
                   setRatio(v)
                   setSlides(suggestSlides(img, v))
-                  setFiles(null)
+                  reset()
                 }}
                 options={[
-                  { value: 'post', label: 'Verticale 4:5 (consigliato)' },
-                  { value: 'square', label: 'Quadrato 1:1' },
+                  { value: 'post', label: t('car.portrait') },
+                  { value: 'square', label: t('car.square') },
                 ]}
               />
             </Field>
 
-            <Field label="2 · Quante slide?" hint={`${slides}`}>
+            <Field label={t('car.step2')}>
               <div className="stepper">
-                <button className="btn ghost" onClick={() => (setSlides(Math.max(2, slides - 1)), setFiles(null))}>
+                <button className="btn ghost" onClick={() => (setSlides(Math.max(2, slides - 1)), reset())} aria-label="−">
                   −
                 </button>
                 <span className="stepper-val">{slides}</span>
-                <button className="btn ghost" onClick={() => (setSlides(Math.min(10, slides + 1)), setFiles(null))}>
+                <button className="btn ghost" onClick={() => (setSlides(Math.min(10, slides + 1)), reset())} aria-label="+">
                   +
                 </button>
               </div>
             </Field>
 
             <Slider
-              label="3 · Zoom"
+              label={t('car.step3')}
               value={framing.zoom}
               min={1}
               max={2.5}
-              onChange={(zoom) => (setFraming({ ...framing, zoom }), setFiles(null))}
+              onChange={(zoom) => (setFraming({ ...framing, zoom }), reset())}
               format={(v) => `${Math.round(v * 100)}%`}
             />
-            <Slider
-              label="Sposta in orizzontale"
-              value={framing.x}
-              min={-1}
-              max={1}
-              onChange={(x) => (setFraming({ ...framing, x }), setFiles(null))}
-            />
-            <Slider
-              label="Sposta in verticale"
-              value={framing.y}
-              min={-1}
-              max={1}
-              onChange={(y) => (setFraming({ ...framing, y }), setFiles(null))}
-            />
+            <Slider label={t('car.moveH')} value={framing.x} min={-1} max={1} onChange={(x) => (setFraming({ ...framing, x }), reset())} />
+            <Slider label={t('car.moveV')} value={framing.y} min={-1} max={1} onChange={(y) => (setFraming({ ...framing, y }), reset())} />
 
-            <Field label="4 · Stile">
-              <div className="chips">
-                {FILTERS.map((f) => (
-                  <button
-                    key={f.key}
-                    className={'chip' + (filter === f.key ? ' on' : '')}
-                    onClick={() => (setFilter(f.key), setFiles(null))}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
+            <Field label={t('car.step4')}>
+              <FilterChips
+                value={filter}
+                onChange={(f) => {
+                  setFilter(f)
+                  reset()
+                  track(MODULE, 'filter', { f })
+                }}
+              />
             </Field>
 
             <div className="row wrap">
               <button className="btn primary big" onClick={prepare} disabled={busy}>
-                {busy ? 'Preparo…' : `✨ Crea ${slides} slide`}
+                {busy ? t('common.preparing') : t('car.create', { n: slides })}
               </button>
-              <FilePick onFile={onFile} label="Cambia foto" compact />
+              <FilePick onFile={onFile} label={t('common.changePhoto')} compact />
             </div>
             {error && <p className="error">{error}</p>}
           </div>
@@ -227,7 +213,7 @@ export function CarouselSplitter() {
       )}
       {error && !img && <p className="error">{error}</p>}
 
-      {files && <ExportPanel module={MODULE} files={files} zipName="postkit-carosello.zip" onClose={() => setFiles(null)} />}
+      {files && <ExportPanel module={MODULE} files={files} zipName="postkit-carousel.zip" onClose={reset} />}
     </section>
   )
 }

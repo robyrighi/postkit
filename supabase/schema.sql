@@ -151,3 +151,25 @@ order by r.created_at desc;
 
 revoke all on public.stats_daily, public.stats_ratings, public.stats_overview,
   public.stats_platform, public.stats_users, public.stats_feedback from anon, authenticated;
+
+-- ---------- Area admin ----------
+-- Email autorizzate (nessun accesso da client). Per aggiungerne una:
+--   insert into public.admins(email) values ('altra@email.ch');
+create table public.admins (email text primary key);
+alter table public.admins enable row level security;
+revoke all on public.admins from anon, authenticated;
+insert into public.admins(email) values ('robyrighi@outlook.com');
+
+create or replace function public.pk_is_admin() returns boolean
+language sql stable security definer set search_path = '' as $$
+  select coalesce(
+    (auth.jwt() ->> 'role') = 'authenticated'
+    and exists (select 1 from public.admins a where a.email = lower(auth.jwt() ->> 'email')),
+    false)
+$$;
+
+-- pk_admin_stats(p_days)            → panoramica, 30 giorni, strumenti, dispositivi, lingue, utenti, feedback
+-- pk_admin_events(p_limit, p_module, p_visitor) → registro attività con nome/email se registrato
+-- pk_admin_visitors(p_limit)        → tutti i visitatori (anche anonimi) con riepilogo
+-- Tutte iniziano con: if not public.pk_is_admin() then raise exception 'not authorized'
+-- e sono eseguibili solo dal ruolo "authenticated" (definizione completa nel progetto Supabase).

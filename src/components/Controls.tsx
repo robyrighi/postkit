@@ -1,4 +1,6 @@
 import { useRef, type ReactNode } from 'react'
+import { useI18n } from '../i18n'
+import { FILTERS, type FilterKey } from '../lib/image'
 
 export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
   return (
@@ -61,7 +63,7 @@ export function Segmented<T extends string | number>(props: {
 
 export function FilePick({
   onFile,
-  label = 'Scegli una foto',
+  label,
   compact = false,
 }: {
   onFile: (f: File) => void
@@ -69,6 +71,7 @@ export function FilePick({
   compact?: boolean
 }) {
   const ref = useRef<HTMLInputElement>(null)
+  const { t } = useI18n()
   return (
     <div
       className={'drop' + (compact ? ' compact' : '')}
@@ -95,13 +98,14 @@ export function FilePick({
         }}
       />
       <span className="drop-icon">🖼️</span>
-      <span>{label}</span>
-      {!compact && <span className="muted small">Tocca per scegliere dalla galleria, o trascina qui</span>}
+      <span>{label ?? t('common.pickPhoto')}</span>
+      {!compact && <span className="muted small">{t('common.pickHint')}</span>}
     </div>
   )
 }
 
 export function ColorRow({ value, onChange, colors }: { value: string; onChange: (c: string) => void; colors: string[] }) {
+  const { t } = useI18n()
   return (
     <div className="colors">
       {colors.map((c) => (
@@ -111,12 +115,25 @@ export function ColorRow({ value, onChange, colors }: { value: string; onChange:
           className={'swatch' + (c.toLowerCase() === value.toLowerCase() ? ' on' : '')}
           style={{ background: c }}
           onClick={() => onChange(c)}
-          aria-label={`Colore ${c}`}
+          aria-label={`${t('common.color')} ${c}`}
         />
       ))}
-      <label className="swatch custom" aria-label="Colore personalizzato">
+      <label className="swatch custom" aria-label={t('common.customColor')}>
         <input type="color" value={value} onChange={(e) => onChange(e.target.value)} />
       </label>
+    </div>
+  )
+}
+
+export function FilterChips({ value, onChange }: { value: FilterKey; onChange: (f: FilterKey) => void }) {
+  const { t } = useI18n()
+  return (
+    <div className="chips">
+      {FILTERS.map((f) => (
+        <button key={f} className={'chip' + (value === f ? ' on' : '')} onClick={() => onChange(f)}>
+          {t(`filter.${f}`)}
+        </button>
+      ))}
     </div>
   )
 }

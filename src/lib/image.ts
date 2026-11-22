@@ -66,16 +66,7 @@ export function ctx2d(c: HTMLCanvasElement): CanvasRenderingContext2D {
 
 export type FilterKey = 'none' | 'bw' | 'bwContrast' | 'vivid' | 'warm' | 'cool' | 'faded' | 'film'
 
-export const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: 'none', label: 'Originale' },
-  { key: 'vivid', label: 'Vivido' },
-  { key: 'bw', label: 'B/N' },
-  { key: 'bwContrast', label: 'B/N forte' },
-  { key: 'warm', label: 'Caldo' },
-  { key: 'cool', label: 'Freddo' },
-  { key: 'faded', label: 'Matte' },
-  { key: 'film', label: 'Pellicola' },
-]
+export const FILTERS: FilterKey[] = ['none', 'vivid', 'bw', 'bwContrast', 'warm', 'cool', 'faded', 'film']
 
 interface Adjust {
   sat: number // 1 = invariato, 0 = B/N

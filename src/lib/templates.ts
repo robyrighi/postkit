@@ -227,6 +227,7 @@ export interface TextOptions {
   title: string
   subtitle: string
   sizeK: number // moltiplicatore utente
+  x: number // 0..1 punto di ancoraggio orizzontale
   y: number
   align: Align
   color: string
@@ -245,7 +246,11 @@ export function drawTemplateText(
   o: TextOptions,
 ) {
   const margin = w * 0.08
-  const maxW = w - margin * 2
+  const ax = Math.max(0, Math.min(1, o.x)) * w
+  // larghezza disponibile in base al punto di ancoraggio e all'allineamento
+  const avail =
+    o.align === 'left' ? w - ax - margin * 0.5 : o.align === 'right' ? ax - margin * 0.5 : 2 * Math.min(ax, w - ax) - margin * 0.5
+  const maxW = Math.max(w * 0.3, Math.min(w - margin * 2, avail))
   const title = t.upper ? o.title.toUpperCase() : o.title
   const sub = t.subUpper ? o.subtitle.toUpperCase() : o.subtitle
 
@@ -274,7 +279,7 @@ export function drawTemplateText(
   let top = o.y * h - blockH / 2
   top = Math.max(margin * 0.8, Math.min(h - margin * 0.8 - blockH, top))
 
-  const x = o.align === 'left' ? margin : o.align === 'right' ? w - margin : w / 2
+  const x = ax
   ctx.textAlign = o.align
   ctx.textBaseline = 'alphabetic'
 
@@ -329,6 +334,11 @@ export function drawTemplateText(
   setSpacing(ctx, 0)
 }
 
+/** Ancoraggio orizzontale predefinito per un allineamento. */
+export function defaultX(a: Align): number {
+  return a === 'left' ? 0.08 : a === 'right' ? 0.92 : 0.5
+}
+
 /** Nero o bianco a seconda della luminosità del colore. */
 export function pickContrast(hex: string): string {
   const m = hex.replace('#', '')
@@ -340,7 +350,7 @@ export function pickContrast(hex: string): string {
 }
 
 /** Piccola firma "creato con PostKit" (si può disattivare). */
-export function drawBadge(ctx: CanvasRenderingContext2D, w: number, h: number) {
+export function drawBadge(ctx: CanvasRenderingContext2D, w: number, h: number, text = 'creato con PostKit') {
   const px = Math.round(w * 0.022)
   ctx.save()
   ctx.font = `600 ${px}px "Inter", sans-serif`
@@ -349,7 +359,7 @@ export function drawBadge(ctx: CanvasRenderingContext2D, w: number, h: number) {
   ctx.fillStyle = 'rgba(255,255,255,0.75)'
   ctx.shadowColor = 'rgba(0,0,0,0.4)'
   ctx.shadowBlur = px * 0.4
-  ctx.fillText('creato con PostKit', w - w * 0.04, h - w * 0.035)
+  ctx.fillText(text, w - w * 0.04, h - w * 0.035)
   ctx.restore()
   setSpacing(ctx, 0)
 }

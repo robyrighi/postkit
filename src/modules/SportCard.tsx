@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ColorRow, Field, FilePick, Segmented, Slider } from '../components/Controls'
+import { ColorRow, Field, FilePick, FilterChips, Segmented, Slider } from '../components/Controls'
 import { ExportPanel } from '../components/ExportPanel'
 import { useEnsureProfile } from '../components/ProfileGate'
+import { useI18n, type Key } from '../i18n'
 import { track } from '../lib/api'
 import { FORMATS, type FormatKey } from '../lib/config'
 import { canvasToFile, stamp } from '../lib/exporter'
@@ -10,7 +11,6 @@ import {
   ctx2d,
   defaultFraming,
   drawCover,
-  FILTERS,
   loadImage,
   makeCanvas,
   setSpacing,
@@ -19,51 +19,22 @@ import {
   type Source,
 } from '../lib/image'
 import { drawBadge, drawOverlay, loadAllFonts, pickContrast } from '../lib/templates'
+import { fmtDuration, parseDuration } from '../lib/time'
 
 const MODULE = 'sport'
 
 const SPORTS = [
-  { id: 'run', label: 'Corsa', emoji: '🏃', pace: true },
-  { id: 'trail', label: 'Trail', emoji: '⛰️', pace: true },
-  { id: 'xcski', label: 'Sci di fondo', emoji: '⛷️', pace: true },
-  { id: 'bike', label: 'Bici', emoji: '🚴', pace: false },
-  { id: 'hike', label: 'Escursione', emoji: '🥾', pace: true },
+  { id: 'run', emoji: '🏃', pace: true },
+  { id: 'trail', emoji: '⛰️', pace: true },
+  { id: 'xcski', emoji: '⛷️', pace: true },
+  { id: 'bike', emoji: '🚴', pace: false },
+  { id: 'hike', emoji: '🥾', pace: true },
 ] as const
 type SportId = (typeof SPORTS)[number]['id']
 
 type Layout = 'classic' | 'bignum' | 'poster' | 'minimal'
-const LAYOUTS: { id: Layout; label: string }[] = [
-  { id: 'classic', label: 'Classico' },
-  { id: 'bignum', label: 'Grandi numeri' },
-  { id: 'poster', label: 'Poster' },
-  { id: 'minimal', label: 'Minimal' },
-]
+const LAYOUTS: Layout[] = ['classic', 'bignum', 'poster', 'minimal']
 const ACCENTS = ['#ffffff', '#fc5200', '#ffd400', '#80ed99', '#4cc9f0', '#ff7eb6']
-
-/** "1:23:45", "45:30" oppure "52" (minuti) → secondi */
-export function parseDuration(s: string): number | null {
-  const t = s.trim().replace(/[.,]/g, ':')
-  if (!t) return null
-  const parts = t.split(':').map((p) => parseInt(p, 10))
-  if (parts.some((p) => isNaN(p) || p < 0)) return null
-  if (parts.length === 1) return parts[0] * 60
-  if (parts.length === 2) return parts[0] * 60 + parts[1]
-  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
-  return null
-}
-
-function fmtDuration(sec: number) {
-  const h = Math.floor(sec / 3600)
-  const m = Math.floor((sec % 3600) / 60)
-  const s = Math.round(sec % 60)
-  const p = (n: number) => String(n).padStart(2, '0')
-  return h ? `${h}:${p(m)}:${p(s)}` : `${m}:${p(s)}`
-}
-
-function num(s: string): number | null {
-  const n = parseFloat(s.replace(',', '.'))
-  return isFinite(n) && n > 0 ? n : null
-}
 
 interface Stat {
   value: string
@@ -72,6 +43,7 @@ interface Stat {
 }
 
 export function SportCard() {
+  const { t, lang, locale } = useI18n()
   const [img, setImg] = useState<Source | null>(null)
   const [format, setFormat] = useState<FormatKey>('story')
   const [framing, setFraming] = useState<Framing>(defaultFraming)
@@ -79,8 +51,10 @@ export function SportCard() {
   const [sport, setSport] = useState<SportId>('run')
   const [layout, setLayout] = useState<Layout>('classic')
   const [accent, setAccent] = useState('#fc5200')
-  const [title, setTitle] = useState('Uscita del mattino')
-  const [date, setDate] = useState(() => new Date().toLocaleDateString('it-CH', { day: 'numeric', month: 'long', year: 'numeric' }))
+  const [titleRaw, setTitle] = useState<string | null>(null)
+  const title = titleRaw ?? t('sport.defaultTitle')
+  const [dateRaw, setDate] = useState<string | null>(null)
+  const date = dateRaw ?? new Date().toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' })
   const [km, setKm] = useState('10')
   const [time, setTime] = useState('52:30')
   const [elev, setElev] = useState('')
@@ -93,40 +67,48 @@ export function SportCard() {
   const preview = useRef<HTMLCanvasElement>(null)
   const ensureProfile = useEnsureProfile()
   const sp = SPORTS.find((s) => s.id === sport)!
+  const dec = (s: string) => (lang === 'en' ? s : s.replace('.', ','))
+  const num = (s: string): number | null => {
+    const n = parseFloat(s.replace(',', '.'))
+    return isFinite(n) && n > 0 ? n : null
+  }
 
   useEffect(() => {
     track(MODULE, 'open')
     loadAllFonts().then(() => setFontsOk(true))
   }, [])
 
+  const reset = () => setFiles(null)
+
   async function onFile(f: File) {
     setError('')
     try {
       setImg(await loadImage(f))
       setFraming(defaultFraming)
-      setFiles(null)
+      reset()
       track(MODULE, 'upload')
     } catch {
-      setError('Non riesco ad aprire questa foto. Prova con un JPG o PNG.')
+      setError(t('common.openError'))
     }
   }
 
   const stats = useMemo<Stat[]>(() => {
     const out: Stat[] = []
     const d = num(km)
-    const t = parseDuration(time)
-    if (d) out.push({ value: d.toFixed(d < 100 ? (Number.isInteger(d) ? 0 : 1) : 0).replace('.', ','), unit: 'km', label: 'Distanza' })
-    if (t) out.push({ value: fmtDuration(t), unit: '', label: 'Tempo' })
-    if (d && t) {
-      if (sp.pace) out.push({ value: fmtDuration(t / d), unit: '/km', label: 'Passo' })
-      else out.push({ value: (d / (t / 3600)).toFixed(1).replace('.', ','), unit: 'km/h', label: 'Velocità' })
+    const tt = parseDuration(time)
+    if (d) out.push({ value: dec(Number.isInteger(d) ? String(d) : d.toFixed(1)), unit: 'km', label: t('sport.lbl.distance') })
+    if (tt) out.push({ value: fmtDuration(tt), unit: '', label: t('sport.lbl.time') })
+    if (d && tt) {
+      if (sp.pace) out.push({ value: fmtDuration(tt / d), unit: '/km', label: t('sport.lbl.pace') })
+      else out.push({ value: dec((d / (tt / 3600)).toFixed(1)), unit: 'km/h', label: t('sport.lbl.speed') })
     }
     const e = num(elev)
-    if (e) out.push({ value: Math.round(e).toLocaleString('it-CH'), unit: 'm', label: 'Dislivello +' })
+    if (e) out.push({ value: Math.round(e).toLocaleString(locale), unit: 'm', label: t('sport.lbl.elev') })
     const h = num(hr)
-    if (h) out.push({ value: String(Math.round(h)), unit: 'bpm', label: 'FC media' })
+    if (h) out.push({ value: String(Math.round(h)), unit: 'bpm', label: t('sport.lbl.hr') })
     return out
-  }, [km, time, elev, hr, sp.pace])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [km, time, elev, hr, sp.pace, t, locale])
 
   const base = useMemo(() => {
     if (!img) return null
@@ -148,10 +130,10 @@ export function SportCard() {
     ctx.drawImage(base, 0, 0)
     const m = w * 0.07
     let badgeBottom = h
-    const label = sp.label.toUpperCase()
+    const label = t(`sport.${sport}` as Key).toUpperCase()
 
-    const statBlock = (x: number, y: number, s: Stat, valPx: number, color: string, align: CanvasTextAlign = 'left') => {
-      ctx.textAlign = align
+    const statBlock = (x: number, y: number, s: Stat, valPx: number, color: string) => {
+      ctx.textAlign = 'left'
       ctx.fillStyle = color
       ctx.font = `600 ${Math.round(valPx * 0.32)}px "Montserrat", sans-serif`
       setSpacing(ctx, valPx * 0.04)
@@ -164,9 +146,7 @@ export function SportCard() {
       ctx.fillText(s.value, x, y)
       if (s.unit) {
         ctx.font = `500 ${Math.round(valPx * 0.42)}px "Oswald", sans-serif`
-        const ux = align === 'left' ? x + vw + valPx * 0.12 : align === 'center' ? x + vw / 2 + valPx * 0.1 : x
-        ctx.textAlign = 'left'
-        ctx.fillText(s.unit, ux, y)
+        ctx.fillText(s.unit, x + vw + valPx * 0.12, y)
       }
     }
 
@@ -177,7 +157,6 @@ export function SportCard() {
       const valPx = w * (cols === 3 ? 0.075 : 0.085)
       const rowH = valPx * 1.75
       const statsTop = h - m - rows * rowH
-      // titolo
       ctx.textAlign = 'left'
       ctx.fillStyle = accent
       ctx.font = `700 ${Math.round(w * 0.03)}px "Montserrat", sans-serif`
@@ -214,10 +193,9 @@ export function SportCard() {
         ctx.fillStyle = accent
         ctx.fillText(main.unit.toUpperCase(), m + vw + px * 0.04, m + w * 0.04 + px * 0.92)
       }
-      const rest = stats.slice(1)
       const valPx = w * 0.075
       let yy = m + w * 0.04 + w * 0.34 + w * 0.13
-      rest.forEach((s) => {
+      stats.slice(1).forEach((s) => {
         statBlock(m, yy, s, valPx, '#fff')
         yy += valPx * 1.7
       })
@@ -245,13 +223,12 @@ export function SportCard() {
       setSpacing(ctx, w * 0.01)
       ctx.fillText(`${label} · ${date.toUpperCase()}`, w / 2 + w * 0.005, m + px * 0.85 + w * 0.06)
       setSpacing(ctx, 0)
-      // fascia statistiche
       const n = Math.max(1, Math.min(4, stats.length))
       const bandH = w * 0.27
       const by = h - bandH - m * 0.6
+      badgeBottom = by - w * 0.005
       ctx.fillStyle = accent
       ctx.fillRect(m * 0.6, by, w - m * 1.2, bandH)
-      badgeBottom = by - w * 0.005
       const ink = pickContrast(accent)
       const cw = (w - m * 1.2) / n
       const valPx = w * (n === 4 ? 0.062 : 0.078)
@@ -275,7 +252,7 @@ export function SportCard() {
       ctx.globalAlpha = 1
       setSpacing(ctx, 0)
     }
-    if (badge) drawBadge(ctx, w, badgeBottom)
+    if (badge) drawBadge(ctx, w, badgeBottom, t('common.badgeText'))
     return c
   }
 
@@ -287,7 +264,7 @@ export function SportCard() {
     p.height = c.height
     ctx2d(p).drawImage(c, 0, 0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [base, layout, accent, title, date, stats, badge, fontsOk, sport])
+  }, [base, layout, accent, title, date, stats, badge, fontsOk, sport, t])
 
   async function prepare() {
     const ok = await ensureProfile()
@@ -297,29 +274,25 @@ export function SportCard() {
       const c = compose()
       if (!c) return
       setFiles([await canvasToFile(c, `postkit-sport-${stamp()}.jpg`)])
-      track(MODULE, 'export', { format, layout, sport, filter })
+      track(MODULE, 'export', { format, layout, sport, filter, km: num(km), time })
     } catch {
-      setError('Qualcosa è andato storto. Riprova.')
+      setError(t('common.genericError'))
     } finally {
       setBusy(false)
     }
   }
 
-  const reset = () => setFiles(null)
-  const t = parseDuration(time)
+  const tt = parseDuration(time)
 
   return (
     <section className="module">
       <header className="module-head">
-        <h1>Card della tua uscita</h1>
-        <p className="muted">
-          La foto della corsa, della sciata o del giro in bici, con i tuoi numeri impaginati come si deve. Pronta per storia o
-          post.
-        </p>
+        <h1>{t('sport.title')}</h1>
+        <p className="muted">{t('sport.lead')}</p>
       </header>
 
       {!img ? (
-        <FilePick onFile={onFile} label="Scegli la foto dell’uscita" />
+        <FilePick onFile={onFile} label={t('sport.pick')} />
       ) : (
         <div className="workspace">
           <div className={'stage ' + format}>
@@ -327,102 +300,108 @@ export function SportCard() {
           </div>
 
           <div className="panel">
-            <Field label="1 · Sport">
+            <Field label={t('sport.step1')}>
               <div className="chips">
                 {SPORTS.map((s) => (
-                  <button key={s.id} className={'chip' + (sport === s.id ? ' on' : '')} onClick={() => (setSport(s.id), reset())}>
-                    {s.emoji} {s.label}
+                  <button
+                    key={s.id}
+                    className={'chip' + (sport === s.id ? ' on' : '')}
+                    onClick={() => (setSport(s.id), reset(), track(MODULE, 'sport', { s: s.id }))}
+                  >
+                    {s.emoji} {t(`sport.${s.id}` as Key)}
                   </button>
                 ))}
               </div>
             </Field>
 
-            <Field label="2 · I tuoi numeri">
+            <Field label={t('sport.step2')}>
               <div className="grid2">
                 <label>
-                  Distanza (km)
-                  <input inputMode="decimal" value={km} onChange={(e) => (setKm(e.target.value), reset())} placeholder="es. 10,5" />
+                  {t('sport.distance')}
+                  <input inputMode="decimal" value={km} onChange={(e) => (setKm(e.target.value), reset())} placeholder={t('sport.distPh')} />
                 </label>
                 <label>
-                  Tempo
+                  {t('sport.time')}
                   <input
                     inputMode="numeric"
                     value={time}
                     onChange={(e) => (setTime(e.target.value), reset())}
-                    placeholder="es. 1:05:30"
-                    className={time && !t ? 'invalid' : ''}
+                    placeholder={t('sport.timePh')}
+                    className={time && !tt ? 'invalid' : ''}
                   />
                 </label>
                 <label>
-                  Dislivello + (m)
-                  <input inputMode="numeric" value={elev} onChange={(e) => (setElev(e.target.value), reset())} placeholder="facoltativo" />
+                  {t('sport.elev')}
+                  <input inputMode="numeric" value={elev} onChange={(e) => (setElev(e.target.value), reset())} placeholder={t('sport.optional')} />
                 </label>
                 <label>
-                  FC media (bpm)
-                  <input inputMode="numeric" value={hr} onChange={(e) => (setHr(e.target.value), reset())} placeholder="facoltativo" />
+                  {t('sport.hr')}
+                  <input inputMode="numeric" value={hr} onChange={(e) => (setHr(e.target.value), reset())} placeholder={t('sport.optional')} />
                 </label>
               </div>
-              <p className="muted small">
-                {sp.pace ? 'Il passo' : 'La velocità media'} si calcola da solo. Tempo: “52:30” oppure “1:05:30”.
-              </p>
+              <p className="muted small">{sp.pace ? t('sport.hintPace') : t('sport.hintSpeed')}</p>
             </Field>
 
-            <Field label="3 · Titolo">
+            <Field label={t('sport.step3')}>
               <input value={title} maxLength={60} onChange={(e) => (setTitle(e.target.value), reset())} />
               <input value={date} maxLength={40} onChange={(e) => (setDate(e.target.value), reset())} />
             </Field>
 
-            <Field label="4 · Impaginazione">
+            <Field label={t('sport.step4')}>
               <div className="chips">
                 {LAYOUTS.map((l) => (
-                  <button key={l.id} className={'chip' + (layout === l.id ? ' on' : '')} onClick={() => (setLayout(l.id), reset())}>
-                    {l.label}
+                  <button
+                    key={l}
+                    className={'chip' + (layout === l ? ' on' : '')}
+                    onClick={() => (setLayout(l), reset(), track(MODULE, 'layout', { l }))}
+                  >
+                    {t(`sport.layout.${l}` as Key)}
                   </button>
                 ))}
               </div>
             </Field>
 
-            <Field label="Colore">
+            <Field label={t('common.color')}>
               <ColorRow value={accent} onChange={(c) => (setAccent(c), reset())} colors={ACCENTS} />
             </Field>
 
             <details className="more">
-              <summary>Formato, foto e filtri</summary>
-              <Field label="Formato">
+              <summary>{t('sport.more')}</summary>
+              <Field label={t('sport.format')}>
                 <Segmented
                   value={format}
                   onChange={(v) => (setFormat(v), reset())}
                   options={[
-                    { value: 'story', label: 'Storia' },
-                    { value: 'post', label: 'Post' },
-                    { value: 'square', label: 'Quadrato' },
+                    { value: 'story', label: t('common.story') },
+                    { value: 'post', label: t('common.post') },
+                    { value: 'square', label: t('common.square') },
                   ]}
                 />
               </Field>
-              <Slider label="Zoom foto" value={framing.zoom} min={1} max={2.5} onChange={(zoom) => (setFraming({ ...framing, zoom }), reset())} />
-              <Slider label="Sposta foto ↔" value={framing.x} min={-1} max={1} onChange={(x) => (setFraming({ ...framing, x }), reset())} />
-              <Slider label="Sposta foto ↕" value={framing.y} min={-1} max={1} onChange={(y) => (setFraming({ ...framing, y }), reset())} />
-              <Field label="Filtro">
-                <div className="chips">
-                  {FILTERS.map((f) => (
-                    <button key={f.key} className={'chip' + (filter === f.key ? ' on' : '')} onClick={() => (setFilter(f.key), reset())}>
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
+              <Slider
+                label={t('common.zoom')}
+                value={framing.zoom}
+                min={1}
+                max={2.5}
+                onChange={(zoom) => (setFraming({ ...framing, zoom }), reset())}
+              />
+              <Slider label={t('common.moveH')} value={framing.x} min={-1} max={1} onChange={(x) => (setFraming({ ...framing, x }), reset())} />
+              <Slider label={t('common.moveV')} value={framing.y} min={-1} max={1} onChange={(y) => (setFraming({ ...framing, y }), reset())} />
+              <Field label={t('common.filter')}>
+                <FilterChips value={filter} onChange={(f) => (setFilter(f), reset(), track(MODULE, 'filter', { f }))} />
               </Field>
               <label className="toggle">
                 <input type="checkbox" checked={badge} onChange={(e) => (setBadge(e.target.checked), reset())} />
                 <span className="toggle-ui" />
-                <span>Firma “creato con PostKit”</span>
+                <span>{t('common.badge')}</span>
               </label>
             </details>
 
             <div className="row wrap">
               <button className="btn primary big" onClick={prepare} disabled={busy}>
-                {busy ? 'Preparo…' : '✨ Crea card'}
+                {busy ? t('common.preparing') : t('sport.create')}
               </button>
-              <FilePick onFile={onFile} label="Cambia foto" compact />
+              <FilePick onFile={onFile} label={t('common.changePhoto')} compact />
             </div>
             {error && <p className="error">{error}</p>}
           </div>

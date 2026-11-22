@@ -1,53 +1,66 @@
-const TOOLS = [
+import { useI18n, type Key } from '../i18n'
+
+const B = import.meta.env.BASE_URL
+
+interface Tool {
+  href: string
+  title: Key
+  text: Key
+  cta: Key
+  img: (lang: string) => string
+  popular?: boolean
+}
+
+const TOOLS: Tool[] = [
   {
-    href: '#/carosello',
-    emoji: '🎞️',
-    title: 'Carosello senza cuciture',
-    text: 'Una foto panoramica divisa in slide perfette. Chi scorre su Instagram la vede continuare.',
-    cta: 'Crea carosello',
-    art: 'art-carousel',
+    href: '#/sport',
+    title: 'home.sport.title',
+    text: 'home.sport.text',
+    cta: 'home.sport.cta',
+    img: (l) => `${B}showcase/sport-${l}.jpg`,
+    popular: true,
   },
   {
     href: '#/testo',
-    emoji: '✍️',
-    title: 'Testo da professionisti',
-    text: 'Stili tipografici curati e l’effetto rivista: il testo dietro la persona, con un tocco.',
-    cta: 'Scrivi sulla foto',
-    art: 'art-text',
+    title: 'home.text.title',
+    text: 'home.text.text',
+    cta: 'home.text.cta',
+    img: () => `${B}showcase/text.jpg`,
   },
   {
-    href: '#/sport',
-    emoji: '🏃',
-    title: 'Card della tua uscita',
-    text: 'Corsa, sci di fondo, bici: la tua foto con i numeri impaginati come si deve.',
-    cta: 'Crea card sport',
-    art: 'art-sport',
+    href: '#/panoramica',
+    title: 'home.carousel.title',
+    text: 'home.carousel.text',
+    cta: 'home.carousel.cta',
+    img: () => `${B}showcase/panorama.jpg`,
   },
 ]
 
 export function Home() {
+  const { t, lang } = useI18n()
   return (
     <div className="home">
       <section className="hero">
-        <p className="eyebrow">Gratis · Nessuna app da installare</p>
+        <p className="eyebrow">{t('home.eyebrow')}</p>
         <h1>
-          Foto pronte per i social,
+          {t('home.title1')}
           <br />
-          <span className="grad">in 30 secondi.</span>
+          <span className="grad">{t('home.title2')}</span>
         </h1>
-        <p className="lead">Scegli cosa vuoi creare, carica una foto, salva. Funziona sul telefono e sul computer.</p>
+        <p className="lead">{t('home.lead')}</p>
       </section>
 
       <section className="tools">
-        {TOOLS.map((t) => (
-          <a key={t.href} href={t.href} className="tool">
-            <div className={'tool-art ' + t.art} aria-hidden="true">
-              <span>{t.emoji}</span>
+        {TOOLS.map((tool) => (
+          <a key={tool.href} href={tool.href} className={'tool' + (tool.popular ? ' popular' : '')}>
+            <div className="tool-art">
+              <img src={tool.img(lang)} alt={t(tool.title)} loading="lazy" decoding="async" />
+              {tool.popular && <span className="tool-badge">⭐ {t('home.badge.popular')}</span>}
             </div>
             <div className="tool-body">
-              <h2>{t.title}</h2>
-              <p>{t.text}</p>
-              <span className="btn primary">{t.cta} →</span>
+              <h2>{t(tool.title)}</h2>
+              <p>{t(tool.text)}</p>
+              <span className="btn primary">{t(tool.cta)} →</span>
             </div>
           </a>
         ))}
@@ -56,18 +69,18 @@ export function Home() {
       <section className="trust">
         <div>
           <span className="trust-icon">🔒</span>
-          <h3>Le tue foto restano tue</h3>
-          <p>Tutto viene elaborato sul tuo dispositivo. Le foto non vengono mai caricate né salvate da nessuna parte.</p>
+          <h3>{t('home.trust1.title')}</h3>
+          <p>{t('home.trust1.text')}</p>
         </div>
         <div>
           <span className="trust-icon">✉️</span>
-          <h3>Nome ed email solo per scaricare</h3>
-          <p>Puoi provare tutto liberamente. Te li chiediamo una volta sola, quando salvi la prima immagine.</p>
+          <h3>{t('home.trust2.title')}</h3>
+          <p>{t('home.trust2.text')}</p>
         </div>
         <div>
           <span className="trust-icon">📲</span>
-          <h3>Dritto nella galleria</h3>
-          <p>Sul telefono le immagini vanno nelle Foto, già nel formato giusto per storie e post.</p>
+          <h3>{t('home.trust3.title')}</h3>
+          <p>{t('home.trust3.text')}</p>
         </div>
       </section>
     </div>

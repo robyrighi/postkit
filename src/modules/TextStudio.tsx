@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ColorRow, Field, FilePick, Segmented, Slider } from '../components/Controls'
+import { ColorRow, Field, FilePick, FilterChips, Segmented, Slider } from '../components/Controls'
 import { ExportPanel } from '../components/ExportPanel'
 import { useEnsureProfile } from '../components/ProfileGate'
+import { useI18n, type Key } from '../i18n'
 import { track } from '../lib/api'
 import { FORMATS, type FormatKey } from '../lib/config'
 import { canvasToFile, stamp } from '../lib/exporter'
@@ -11,7 +12,6 @@ import {
   cutSubject,
   defaultFraming,
   drawCover,
-  FILTERS,
   loadImage,
   makeCanvas,
   type FilterKey,
@@ -19,6 +19,7 @@ import {
   type Source,
 } from '../lib/image'
 import {
+  defaultX,
   drawBadge,
   drawOverlay,
   drawTemplateText,
@@ -32,16 +33,34 @@ const COLORS = ['#ffffff', '#111111', '#ffd400', '#ff5a36', '#ff7eb6', '#4cc9f0'
 
 type AiState = 'off' | 'loading' | 'ready' | 'error'
 
+// Griglia delle 9 posizioni rapide
+const POSITIONS: { id: string; align: Align; y: number; label: Key }[] = [
+  { id: 'tl', align: 'left', y: 0.14, label: 'text.pos.tl' },
+  { id: 'tc', align: 'center', y: 0.14, label: 'text.pos.tc' },
+  { id: 'tr', align: 'right', y: 0.14, label: 'text.pos.tr' },
+  { id: 'ml', align: 'left', y: 0.5, label: 'text.pos.ml' },
+  { id: 'mc', align: 'center', y: 0.5, label: 'text.pos.mc' },
+  { id: 'mr', align: 'right', y: 0.5, label: 'text.pos.mr' },
+  { id: 'bl', align: 'left', y: 0.84, label: 'text.pos.bl' },
+  { id: 'bc', align: 'center', y: 0.84, label: 'text.pos.bc' },
+  { id: 'br', align: 'right', y: 0.84, label: 'text.pos.br' },
+]
+
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v))
+
 export function TextStudio() {
+  const { t } = useI18n()
   const [img, setImg] = useState<Source | null>(null)
   const [format, setFormat] = useState<FormatKey>('story')
   const [framing, setFraming] = useState<Framing>(defaultFraming)
   const [filter, setFilter] = useState<FilterKey>('none')
   const [tplId, setTplId] = useState('impact')
-  const tpl = TEXT_TEMPLATES.find((t) => t.id === tplId)!
-  const [title, setTitle] = useState('Il tuo titolo')
+  const tpl = TEXT_TEMPLATES.find((v) => v.id === tplId)!
+  const [titleRaw, setTitle] = useState<string | null>(null)
+  const title = titleRaw ?? t('text.defaultTitle')
   const [subtitle, setSubtitle] = useState('')
   const [sizeK, setSizeK] = useState(1)
+  const [x, setX] = useState(defaultX(tpl.align))
   const [y, setY] = useState(tpl.y)
   const [align, setAlign] = useState<Align>(tpl.align)
   const [color, setColor] = useState(tpl.color)
@@ -52,8 +71,10 @@ export function TextStudio() {
   const [fontsOk, setFontsOk] = useState(false)
   const [files, setFiles] = useState<File[] | null>(null)
   const [busy, setBusy] = useState(false)
+  const [dragging, setDragging] = useState(false)
   const [error, setError] = useState('')
   const preview = useRef<HTMLCanvasElement>(null)
+  const drag = useRef<{ px: number; py: number; x: number; y: number; w: number; h: number } | null>(null)
   const ensureProfile = useEnsureProfile()
 
   useEffect(() => {
@@ -61,15 +82,32 @@ export function TextStudio() {
     loadAllFonts().then(() => setFontsOk(true))
   }, [])
 
+  const reset = () => setFiles(null)
+
   function pickTemplate(id: string) {
-    const t = TEXT_TEMPLATES.find((x) => x.id === id)!
+    const tp = TEXT_TEMPLATES.find((v) => v.id === id)!
     setTplId(id)
-    setY(t.y)
-    setAlign(t.align)
-    setColor(t.color)
+    setY(tp.y)
+    setAlign(tp.align)
+    setX(defaultX(tp.align))
+    setColor(tp.color)
     setSizeK(1)
-    setFiles(null)
+    reset()
     track(MODULE, 'template', { id })
+  }
+
+  function pickPosition(p: (typeof POSITIONS)[number]) {
+    setAlign(p.align)
+    setX(defaultX(p.align))
+    setY(p.y)
+    reset()
+    track(MODULE, 'position', { id: p.id })
+  }
+
+  function changeAlign(a: Align) {
+    setAlign(a)
+    setX(defaultX(a))
+    reset()
   }
 
   async function onFile(f: File) {
@@ -79,10 +117,10 @@ export function TextStudio() {
       setImg(im)
       setFraming(defaultFraming)
       setMask(null)
-      setFiles(null)
+      reset()
       track(MODULE, 'upload')
     } catch {
-      setError('Non riesco ad aprire questa foto. Prova con un JPG o PNG.')
+      setError(t('common.openError'))
     }
   }
 
@@ -104,7 +142,7 @@ export function TextStudio() {
     if (!behind || !base) return
     setMask(null)
     let cancelled = false
-    const t = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       setAi('loading')
       try {
         const { subjectMask } = await import('../lib/segment')
@@ -118,12 +156,13 @@ export function TextStudio() {
         if (!cancelled) {
           setAi('error')
           setBehind(false)
+          track(MODULE, 'ai_error')
         }
       }
     }, 350)
     return () => {
       cancelled = true
-      clearTimeout(t)
+      clearTimeout(timer)
     }
   }, [behind, base])
 
@@ -138,9 +177,9 @@ export function TextStudio() {
     const out = makeCanvas(w, h)
     const ctx = ctx2d(out)
     ctx.drawImage(scene, 0, 0)
-    drawTemplateText(ctx, w, h, tpl, { title, subtitle, sizeK, y, align, color })
+    drawTemplateText(ctx, w, h, tpl, { title, subtitle, sizeK, x, y, align, color })
     if (behind && mask) ctx.drawImage(cutSubject(scene, mask), 0, 0)
-    if (badge) drawBadge(ctx, w, h)
+    if (badge) drawBadge(ctx, w, h, t('common.badgeText'))
     return out
   }
 
@@ -152,7 +191,29 @@ export function TextStudio() {
     p.height = c.height
     ctx2d(p).drawImage(c, 0, 0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [base, tplId, title, subtitle, sizeK, y, align, color, behind, mask, badge, fontsOk])
+  }, [base, tplId, title, subtitle, sizeK, x, y, align, color, behind, mask, badge, fontsOk, t])
+
+  // ---- Trascinamento del testo sull'anteprima ----
+  function onPointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
+    const r = e.currentTarget.getBoundingClientRect()
+    drag.current = { px: e.clientX, py: e.clientY, x, y, w: r.width, h: r.height }
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setDragging(true)
+  }
+  function onPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
+    const d = drag.current
+    if (!d) return
+    setX(clamp01(d.x + (e.clientX - d.px) / d.w))
+    setY(clamp01(d.y + (e.clientY - d.py) / d.h))
+  }
+  function onPointerUp() {
+    if (drag.current) {
+      drag.current = null
+      setDragging(false)
+      reset()
+      track(MODULE, 'drag')
+    }
+  }
 
   async function prepare() {
     const ok = await ensureProfile()
@@ -161,26 +222,24 @@ export function TextStudio() {
     try {
       const c = compose()
       if (!c) return
-      const f = await canvasToFile(c, `postkit-testo-${stamp()}.jpg`)
-      setFiles([f])
+      setFiles([await canvasToFile(c, `postkit-text-${stamp()}.jpg`)])
       track(MODULE, 'export', { format, tpl: tplId, filter, behind })
     } catch {
-      setError('Qualcosa è andato storto. Riprova.')
+      setError(t('common.genericError'))
     } finally {
       setBusy(false)
     }
   }
 
-  const reset = () => setFiles(null)
+  const activePos = POSITIONS.find(
+    (p) => p.align === align && Math.abs(p.y - y) < 0.02 && Math.abs(defaultX(p.align) - x) < 0.02,
+  )
 
   return (
     <section className="module">
       <header className="module-head">
-        <h1>Testo da professionisti</h1>
-        <p className="muted">
-          Scegli uno stile tipografico curato, scrivi, fatto. Con un tocco puoi mettere il testo <em>dietro</em> la persona,
-          l’effetto da rivista.
-        </p>
+        <h1>{t('text.title')}</h1>
+        <p className="muted">{t('text.lead')}</p>
       </header>
 
       {!img ? (
@@ -188,58 +247,90 @@ export function TextStudio() {
       ) : (
         <div className="workspace">
           <div className={'stage ' + format}>
-            <canvas ref={preview} className="preview" />
-            {ai === 'loading' && <div className="stage-badge">🧠 Riconosco la persona…</div>}
+            <canvas
+              ref={preview}
+              className={'preview draggable' + (dragging ? ' dragging' : '')}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
+            />
+            {ai === 'loading' && <div className="stage-badge">{t('text.aiLoading')}</div>}
           </div>
 
           <div className="panel">
-            <Field label="1 · Dove lo pubblichi?">
+            <Field label={t('text.step1')}>
               <Segmented
                 value={format}
                 onChange={(v) => (setFormat(v), reset())}
                 options={[
-                  { value: 'story', label: 'Storia' },
-                  { value: 'post', label: 'Post' },
-                  { value: 'square', label: 'Quadrato' },
+                  { value: 'story', label: t('common.story') },
+                  { value: 'post', label: t('common.post') },
+                  { value: 'square', label: t('common.square') },
                 ]}
               />
             </Field>
 
-            <Field label="2 · Stile del testo">
+            <Field label={t('text.step2')}>
               <div className="tpl-grid">
-                {TEXT_TEMPLATES.map((t) => (
+                {TEXT_TEMPLATES.map((tp) => (
                   <button
-                    key={t.id}
-                    className={'tpl' + (t.id === tplId ? ' on' : '')}
-                    onClick={() => pickTemplate(t.id)}
+                    key={tp.id}
+                    className={'tpl' + (tp.id === tplId ? ' on' : '')}
+                    onClick={() => pickTemplate(tp.id)}
                     style={{
-                      fontFamily: `"${t.font}"`,
-                      fontWeight: t.weight,
-                      fontStyle: t.italic ? 'italic' : 'normal',
-                      textTransform: t.upper ? 'uppercase' : 'none',
+                      fontFamily: `"${tp.font}"`,
+                      fontWeight: tp.weight,
+                      fontStyle: tp.italic ? 'italic' : 'normal',
+                      textTransform: tp.upper ? 'uppercase' : 'none',
                     }}
                   >
                     <span className="tpl-sample">Aa</span>
-                    <span className="tpl-name">{t.label}</span>
+                    <span className="tpl-name">{t(`tpl.${tp.id}` as Key)}</span>
                   </button>
                 ))}
               </div>
             </Field>
 
-            <Field label="3 · Scrivi">
+            <Field label={t('text.step3')}>
               <textarea
                 value={title}
                 onChange={(e) => (setTitle(e.target.value), reset())}
                 rows={2}
                 maxLength={140}
-                placeholder="Titolo"
+                placeholder={t('text.titlePh')}
               />
               <input
                 value={subtitle}
                 onChange={(e) => (setSubtitle(e.target.value), reset())}
                 maxLength={120}
-                placeholder="Sottotitolo (facoltativo)"
+                placeholder={t('text.subPh')}
               />
+            </Field>
+
+            <Field label={t('text.step4')}>
+              <div className="pos-row">
+                <div className="pos-grid" role="radiogroup" aria-label={t('text.step4')}>
+                  {POSITIONS.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={activePos?.id === p.id}
+                      aria-label={t(p.label)}
+                      title={t(p.label)}
+                      className={'pos-cell ' + p.align + (activePos?.id === p.id ? ' on' : '')}
+                      onClick={() => pickPosition(p)}
+                    >
+                      <span />
+                    </button>
+                  ))}
+                </div>
+                <div className="pos-side">
+                  <Slider label={t('text.size')} value={sizeK} min={0.5} max={1.8} onChange={(v) => (setSizeK(v), reset())} />
+                  <p className="muted small">✋ {t('text.dragHint')}</p>
+                </div>
+              </div>
             </Field>
 
             <label className="toggle big-toggle">
@@ -254,71 +345,73 @@ export function TextStudio() {
               />
               <span className="toggle-ui" />
               <span>
-                <strong>Testo dietro la persona</strong>
-                <span className="muted small block">
-                  Funziona con persone ben visibili. La prima volta scarica l’IA (pochi secondi).
-                </span>
+                <strong>{t('text.behind')}</strong>
+                <span className="muted small block">{t('text.behindHint')}</span>
               </span>
             </label>
-            {ai === 'error' && (
-              <p className="error">L’IA non è disponibile su questo dispositivo/browser. Il testo resta sopra la foto.</p>
-            )}
+            {ai === 'error' && <p className="error">{t('text.aiError')}</p>}
 
             <details className="more">
-              <summary>Regola testo e foto</summary>
-              <Slider label="Grandezza testo" value={sizeK} min={0.5} max={1.8} onChange={(v) => (setSizeK(v), reset())} />
-              <Slider label="Altezza testo" value={y} min={0.05} max={0.95} onChange={(v) => (setY(v), reset())} />
-              <Field label="Allineamento">
+              <summary>{t('text.more')}</summary>
+              <Slider label={t('text.posX')} value={x} min={0} max={1} onChange={(v) => (setX(v), reset())} />
+              <Slider label={t('text.posY')} value={y} min={0} max={1} onChange={(v) => (setY(v), reset())} />
+              <Field label={t('text.align')}>
                 <Segmented
                   value={align}
-                  onChange={(v) => (setAlign(v), reset())}
+                  onChange={changeAlign}
                   options={[
-                    { value: 'left', label: 'Sinistra' },
-                    { value: 'center', label: 'Centro' },
-                    { value: 'right', label: 'Destra' },
+                    { value: 'left', label: t('text.left') },
+                    { value: 'center', label: t('text.center') },
+                    { value: 'right', label: t('text.right') },
                   ]}
                 />
               </Field>
-              <Field label={tpl.band ? 'Colore fascia' : 'Colore testo'}>
+              <Field label={tpl.band ? t('text.colorBand') : t('text.colorText')}>
                 <ColorRow value={color} onChange={(c) => (setColor(c), reset())} colors={COLORS} />
               </Field>
               <Slider
-                label="Zoom foto"
+                label={t('common.zoom')}
                 value={framing.zoom}
                 min={1}
                 max={2.5}
                 onChange={(zoom) => (setFraming({ ...framing, zoom }), reset())}
               />
-              <Slider label="Sposta foto ↔" value={framing.x} min={-1} max={1} onChange={(x) => (setFraming({ ...framing, x }), reset())} />
-              <Slider label="Sposta foto ↕" value={framing.y} min={-1} max={1} onChange={(yy) => (setFraming({ ...framing, y: yy }), reset())} />
-              <Field label="Filtro foto">
-                <div className="chips">
-                  {FILTERS.map((f) => (
-                    <button key={f.key} className={'chip' + (filter === f.key ? ' on' : '')} onClick={() => (setFilter(f.key), reset())}>
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
+              <Slider
+                label={t('common.moveH')}
+                value={framing.x}
+                min={-1}
+                max={1}
+                onChange={(v) => (setFraming({ ...framing, x: v }), reset())}
+              />
+              <Slider
+                label={t('common.moveV')}
+                value={framing.y}
+                min={-1}
+                max={1}
+                onChange={(v) => (setFraming({ ...framing, y: v }), reset())}
+              />
+              <Field label={t('common.filter')}>
+                <FilterChips value={filter} onChange={(f) => (setFilter(f), reset(), track(MODULE, 'filter', { f }))} />
               </Field>
               <label className="toggle">
                 <input type="checkbox" checked={badge} onChange={(e) => (setBadge(e.target.checked), reset())} />
                 <span className="toggle-ui" />
-                <span>Firma “creato con PostKit”</span>
+                <span>{t('common.badge')}</span>
               </label>
             </details>
 
             <div className="row wrap">
               <button className="btn primary big" onClick={prepare} disabled={busy || (behind && ai === 'loading')}>
-                {busy ? 'Preparo…' : '✨ Crea immagine'}
+                {busy ? t('common.preparing') : t('text.create')}
               </button>
-              <FilePick onFile={onFile} label="Cambia foto" compact />
+              <FilePick onFile={onFile} label={t('common.changePhoto')} compact />
             </div>
             {error && <p className="error">{error}</p>}
           </div>
         </div>
       )}
       {error && !img && <p className="error">{error}</p>}
-      {files && <ExportPanel module={MODULE} files={files} zipName="postkit-testo.zip" onClose={reset} />}
+      {files && <ExportPanel module={MODULE} files={files} zipName="postkit-text.zip" onClose={reset} />}
     </section>
   )
 }
