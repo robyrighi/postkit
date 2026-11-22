@@ -29,7 +29,9 @@ const SPORTS = [
   { id: 'trail', emoji: '⛰️', pace: true },
   { id: 'xcski', emoji: '⛷️', pace: true },
   { id: 'bike', emoji: '🚴', pace: false },
+  { id: 'mtb', emoji: '🚵', pace: false },
   { id: 'hike', emoji: '🥾', pace: true },
+  { id: 'spin', emoji: '🔥', pace: false },
 ] as const
 type SportId = (typeof SPORTS)[number]['id']
 
@@ -60,6 +62,8 @@ export function SportCard() {
   const [time, setTime] = useState('52:30')
   const [elev, setElev] = useState('')
   const [hr, setHr] = useState('')
+  const [kcal, setKcal] = useState('')
+  const [power, setPower] = useState('')
   const [badge, setBadge] = useState(true)
   const [route, setRoute] = useState<[number, number][] | null>(null)
   const [showRoute, setShowRoute] = useState(true)
@@ -104,6 +108,8 @@ export function SportCard() {
       if (a.durationSec) setTime(fmtDuration(a.durationSec))
       setElev(a.elevGain ? String(Math.round(a.elevGain)) : '')
       setHr(a.avgHr ? String(Math.round(a.avgHr)) : '')
+      setKcal(a.kcal ? String(Math.round(a.kcal)) : '')
+      setPower(a.avgPower ? String(Math.round(a.avgPower)) : '')
       if (a.date) setDate(a.date.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' }))
       if (a.sport) setSport(a.sport)
       if (a.name && titleRaw === null) setTitle(a.name.slice(0, 60))
@@ -133,9 +139,13 @@ export function SportCard() {
     if (e) out.push({ value: Math.round(e).toLocaleString(locale), unit: 'm', label: t('sport.lbl.elev') })
     const h = num(hr)
     if (h) out.push({ value: String(Math.round(h)), unit: 'bpm', label: t('sport.lbl.hr') })
+    const pw = num(power)
+    if (pw) out.push({ value: String(Math.round(pw)), unit: 'W', label: t('sport.lbl.power') })
+    const kc = num(kcal)
+    if (kc) out.push({ value: Math.round(kc).toLocaleString(locale), unit: 'kcal', label: t('sport.lbl.kcal') })
     return out
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [km, time, elev, hr, sp.pace, t, locale])
+  }, [km, time, elev, hr, kcal, power, sp.pace, t, locale])
 
   const base = useMemo(() => {
     if (!img) return null
@@ -346,7 +356,12 @@ export function SportCard() {
                   <button
                     key={s.id}
                     className={'chip' + (sport === s.id ? ' on' : '')}
-                    onClick={() => (setSport(s.id), reset(), track(MODULE, 'sport', { s: s.id }))}
+                    onClick={() => {
+                      setSport(s.id)
+                      if (s.id === 'spin' && km === '10') setKm('') // spinning: niente distanza di default
+                      reset()
+                      track(MODULE, 'sport', { s: s.id })
+                    }}
                   >
                     {s.emoji} {t(`sport.${s.id}` as Key)}
                   </button>
@@ -401,8 +416,16 @@ export function SportCard() {
                   {t('sport.hr')}
                   <input inputMode="numeric" value={hr} onChange={(e) => (setHr(e.target.value), reset())} placeholder={t('sport.optional')} />
                 </label>
+                <label>
+                  {t('sport.power')}
+                  <input inputMode="numeric" value={power} onChange={(e) => (setPower(e.target.value), reset())} placeholder={t('sport.optional')} />
+                </label>
+                <label>
+                  {t('sport.kcal')}
+                  <input inputMode="numeric" value={kcal} onChange={(e) => (setKcal(e.target.value), reset())} placeholder={t('sport.optional')} />
+                </label>
               </div>
-              <p className="muted small">{sp.pace ? t('sport.hintPace') : t('sport.hintSpeed')}</p>
+              <p className="muted small">{sport === 'spin' ? t('sport.hintSpin') : sp.pace ? t('sport.hintPace') : t('sport.hintSpeed')}</p>
             </Field>
 
             <Field label={t('sport.step3')}>

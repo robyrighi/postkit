@@ -1,13 +1,15 @@
 // Lettura di file attività GPX (Garmin Connect, Strava, Komoot…) e FIT (file originale Garmin).
 // Tutto avviene nel browser: il file non viene mai inviato a nessuno.
 
-export type SportGuess = 'run' | 'trail' | 'xcski' | 'bike' | 'hike'
+export type SportGuess = 'run' | 'trail' | 'xcski' | 'bike' | 'mtb' | 'hike' | 'spin'
 
 export interface ActivityData {
   distanceKm?: number
   durationSec?: number
   elevGain?: number
   avgHr?: number
+  kcal?: number
+  avgPower?: number
   date?: Date
   sport?: SportGuess
   name?: string
@@ -48,10 +50,12 @@ export function elevationGain(ele: number[]): number {
 function guessSport(s: string | undefined | null, sub?: string | null): SportGuess | undefined {
   const t = `${s ?? ''} ${sub ?? ''}`.toLowerCase()
   if (!t.trim()) return undefined
+  if (/spin|indoor_cycling|virtual_ride|indoor cycling/.test(t)) return 'spin'
   if (/trail/.test(t)) return 'trail'
   if (/cross_country|nordic|skate_ski|ski/.test(t)) return 'xcski'
-  if (/cycl|bik|ride|gravel/.test(t)) return 'bike'
   if (/hik|walk|mountaineer/.test(t)) return 'hike'
+  if (/mountain_bik|mountain bik|mtb|cycling mountain|e_bike_mountain/.test(t)) return 'mtb'
+  if (/cycl|bik|ride|gravel/.test(t)) return 'bike'
   if (/run/.test(t)) return 'run'
   return undefined
 }
@@ -130,6 +134,8 @@ export async function parseFit(buf: ArrayBuffer): Promise<ActivityData> {
   const timer = (s?.total_timer_time ?? s?.total_elapsed_time) as number | undefined
   const asc = s?.total_ascent as number | undefined
   const hr = s?.avg_heart_rate as number | undefined
+  const kcal = s?.total_calories as number | undefined
+  const pw = s?.avg_power as number | undefined
   const start = (s?.start_time ?? records[0]?.timestamp) as Date | string | undefined
   return {
     points,
@@ -137,6 +143,8 @@ export async function parseFit(buf: ArrayBuffer): Promise<ActivityData> {
     durationSec: typeof timer === 'number' ? timer : undefined,
     elevGain: typeof asc === 'number' ? asc : ele.length > 1 ? elevationGain(ele) : undefined,
     avgHr: typeof hr === 'number' ? hr : undefined,
+    kcal: typeof kcal === 'number' && kcal > 0 ? kcal : undefined,
+    avgPower: typeof pw === 'number' && pw > 0 ? pw : undefined,
     date: start ? new Date(start) : undefined,
     sport: guessSport(s?.sport as string | undefined, s?.sub_sport as string | undefined),
   }

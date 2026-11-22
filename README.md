@@ -8,7 +8,7 @@
 
 | Strumento | Cosa fa |
 |---|---|
-| 🏃 **Card sport** | Foto + distanza, tempo, passo/velocità, dislivello e FC in 4 impaginazioni (corsa, trail, sci di fondo, bici, escursione). **Import GPX/FIT** da Garmin/Strava: dati compilati da soli e percorso disegnato sulla card |
+| 🏃 **Card sport** | Foto + distanza, tempo, passo/velocità, dislivello e FC in 4 impaginazioni (corsa, trail, sci di fondo, bici, MTB, escursione, spinning; campi facoltativi FC, potenza, calorie). **Import GPX/FIT** da Garmin/Strava: dati compilati da soli e percorso disegnato sulla card |
 | ✍️ **Aggiungi testo alle foto** | 7 stili tipografici, 9 posizioni rapide o trascinamento libero, e l'effetto *testo dietro la persona* con IA nel browser |
 | 🎞️ **Dividi la panoramica** | Divide una foto panoramica in 2–10 slide (4:5 o 1:1) che su Instagram scorrono come un'unica immagine |
 
