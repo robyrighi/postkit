@@ -1254,3 +1254,101 @@ details.more[open] > :not(summary) {
 .small-toggle input:checked + .toggle-ui::after {
   transform: translateX(16px);
 }
+
+/* ---------- Logo e icone del menu ---------- */
+.brand {
+  gap: 9px;
+  letter-spacing: -0.02em;
+}
+.brand-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.logo-mark {
+  flex: none;
+  filter: drop-shadow(0 4px 14px rgba(255, 122, 47, 0.35));
+}
+.nav-icon {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  transition: color 0.2s, transform 0.2s;
+}
+.nav-icon .accent {
+  stroke: var(--accent2);
+  opacity: 0.6;
+}
+.nav-icon .accent.fill {
+  fill: var(--accent2);
+  stroke: none;
+}
+.nav-links a:hover .nav-icon {
+  color: var(--text);
+  transform: translateY(-1px);
+}
+.nav-links a.on .nav-icon {
+  color: #fff;
+}
+.nav-links a.on .nav-icon .accent {
+  stroke: #ff7a2f;
+  opacity: 1;
+}
+.nav-links a.on .nav-icon .accent.fill {
+  fill: #ffb347;
+}
+.nav-links a.on {
+  background: linear-gradient(135deg, rgba(255, 90, 138, 0.22), rgba(255, 179, 71, 0.16));
+  box-shadow: inset 0 0 0 1px rgba(255, 122, 47, 0.45);
+}
+@media (max-width: 560px) {
+  .nav-links a {
+    padding: 8px 11px;
+  }
+}
+
+/* ---------- Installa l'app ---------- */
+.install {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 20px;
+  background: linear-gradient(120deg, rgba(255, 90, 138, 0.12), rgba(255, 179, 71, 0.08)), var(--card);
+  border-color: rgba(255, 122, 47, 0.4);
+  flex-wrap: wrap;
+}
+.install-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 200px;
+}
+.ios-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: s;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ios-steps li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+.ios-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--card2);
+  color: #4ea1ff;
+  font-weight: 800;
+}
+.modal .row h2 {
+  margin: 0;
+}

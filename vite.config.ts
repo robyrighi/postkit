@@ -1,4 +1,7 @@
 import react from '@vitejs/plugin-react'
+import { createHash } from 'node:crypto'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
 
 // Content Security Policy: solo il nostro sito, Supabase (statistiche) e il
@@ -11,6 +14,7 @@ const CSP = [
   "font-src 'self' data:",
   "connect-src 'self' https://ztgehpjliohcqtsuzdbq.supabase.co https://storage.googleapis.com",
   "worker-src 'self' blob:",
+  "manifest-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'none'",
@@ -29,8 +33,36 @@ function csp(): Plugin {
   }
 }
 
+// Inserisce nel service worker l'elenco dei file da salvare per l'uso offline
+function precache(): Plugin {
+  let files: string[] = []
+  let outDir = 'dist'
+  return {
+    name: 'postkit-precache',
+    apply: 'build',
+    configResolved(c) {
+      outDir = c.build.outDir
+    },
+    generateBundle(_o, bundle) {
+      files = Object.keys(bundle).filter((f) => /\.(js|css|woff2|svg|png|jpg|webmanifest)$/.test(f) && !f.endsWith('.map'))
+    },
+    closeBundle() {
+      const extra = ['icons/icon-192.png', 'icons/icon-512.png', 'icons/logo.svg', 'icons/apple-touch-icon.png',
+        'showcase/sport-it.jpg', 'showcase/sport-en.jpg', 'showcase/sport-de.jpg', 'showcase/sport-fr.jpg',
+        'showcase/text.jpg', 'showcase/panorama.jpg']
+      const list = [...new Set([...files, ...extra])].map((f) => './' + f)
+      const version = createHash('sha1').update(list.join('|')).digest('hex').slice(0, 10)
+      const swPath = resolve(outDir, 'sw.js')
+      const sw = readFileSync(swPath, 'utf8')
+        .replace('[] /*__PK_PRECACHE__*/', JSON.stringify(list))
+        .replace("'pk-' /*__PK_VERSION__*/", `'pk-${version}'`)
+      writeFileSync(swPath, sw)
+    },
+  }
+}
+
 // GitHub Pages pubblica su https://robyrighi.github.io/postkit/
 export default defineConfig({
   base: '/postkit/',
-  plugins: [react(), csp()],
+  plugins: [react(), csp(), precache()],
 })

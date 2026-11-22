@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="o" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff5a8a"/><stop offset="0.55" stop-color="#ff7a2f"/><stop offset="1" stop-color="#ffb347"/>
+    </linearGradient>
+  </defs>
+  <!-- mirino fotografico -->
+  <g fill="none" stroke="url(#o)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 15V8a4 4 0 0 1 4-4h7"/>
+    <path d="M49 4h7a4 4 0 0 1 4 4v7"/>
+    <path d="M60 49v7a4 4 0 0 1-4 4h-7"/>
+    <path d="M15 60H8a4 4 0 0 1-4-4v-7"/>
+  </g>
+  <!-- P -->
+  <path fill="#ffffff" fill-rule="evenodd" d="M9 16h12.5a10 10 0 0 1 0 20H16v12H9zM16 22.5v7h5.5a3.5 3.5 0 0 0 0-7z"/>
+  <!-- K -->
+  <path fill="url(#o)" d="M33.5 16h7v12.2L49.3 16h8.4L46.9 30.3 58.5 48h-8.3l-8.1-12.7-1.6 2.1V48h-7z"/>
+</svg>

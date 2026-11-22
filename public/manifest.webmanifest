@@ -1,0 +1,25 @@
+{
+  "name": "PostKit — foto pronte per i social",
+  "short_name": "PostKit",
+  "description": "Card sport, testo sulle foto e panoramiche divise per Instagram. Gratis, le foto restano sul tuo dispositivo.",
+  "id": "/postkit/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d0b14",
+  "theme_color": "#0d0b14",
+  "lang": "it",
+  "categories": ["photo", "social", "sports", "lifestyle"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Card sport", "short_name": "Sport", "url": "./#/sport", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Aggiungi testo alle foto", "short_name": "Testo", "url": "./#/testo", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Dividi la panoramica", "short_name": "Panoramica", "url": "./#/panoramica", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

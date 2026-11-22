@@ -13,7 +13,7 @@ const it = {
   'lang.label': 'Lingua',
 
   // Home
-  'home.eyebrow': 'Gratis · Nessuna app da installare',
+  'home.eyebrow': 'Gratis · Funziona subito, anche come app',
   'home.title1': 'Foto pronte per i social,',
   'home.title2': 'in 30 secondi.',
   'home.lead': 'Scegli cosa vuoi creare, carica una foto, salva. Funziona su smartphone e desktop.',
@@ -195,6 +195,15 @@ const it = {
   'gate.cancel': 'Annulla',
   'gate.continue': 'Continua',
   'gate.wait': 'Un attimo…',
+  // App installabile
+  'app.install': 'Installa l’app',
+  'app.title': 'PostKit come app',
+  'app.text': 'Aggiungila alla schermata Home: si apre a tutto schermo come un’app vera, gratis e senza store.',
+  'app.ios1': 'Tocca il pulsante Condividi',
+  'app.ios2': 'Scegli “Aggiungi alla schermata Home”',
+  'app.ios3': 'Conferma con “Aggiungi”',
+  'app.later': 'Più tardi',
+  'app.ok': 'Ho capito',
 }
 
 export type Key = keyof typeof it
@@ -210,7 +219,7 @@ const en: Dict = {
   'footer.made': 'Made in Grisons',
   'lang.label': 'Language',
 
-  'home.eyebrow': 'Free · No app to install',
+  'home.eyebrow': 'Free · Works instantly, also as an app',
   'home.title1': 'Social-ready photos,',
   'home.title2': 'in 30 seconds.',
   'home.lead': 'Choose what to create, add a photo, save. Works on smartphone and desktop.',
@@ -384,6 +393,14 @@ const en: Dict = {
   'gate.cancel': 'Cancel',
   'gate.continue': 'Continue',
   'gate.wait': 'One moment…',
+  'app.install': 'Install the app',
+  'app.title': 'PostKit as an app',
+  'app.text': 'Add it to your Home Screen: it opens full screen like a real app, free and without an app store.',
+  'app.ios1': 'Tap the Share button',
+  'app.ios2': 'Choose “Add to Home Screen”',
+  'app.ios3': 'Confirm with “Add”',
+  'app.later': 'Later',
+  'app.ok': 'Got it',
 }
 
 const de: Dict = {
@@ -396,7 +413,7 @@ const de: Dict = {
   'footer.made': 'Made in Graubünden',
   'lang.label': 'Sprache',
 
-  'home.eyebrow': 'Kostenlos · Keine App nötig',
+  'home.eyebrow': 'Kostenlos · Sofort startklar, auch als App',
   'home.title1': 'Fotos bereit für Social Media,',
   'home.title2': 'in 30 Sekunden.',
   'home.lead': 'Wähle, was du erstellen willst, lade ein Foto, speichere. Funktioniert auf Smartphone und Desktop.',
@@ -570,6 +587,14 @@ const de: Dict = {
   'gate.cancel': 'Abbrechen',
   'gate.continue': 'Weiter',
   'gate.wait': 'Einen Moment…',
+  'app.install': 'App installieren',
+  'app.title': 'PostKit als App',
+  'app.text': 'Füge sie zum Home-Bildschirm hinzu: Sie öffnet sich im Vollbild wie eine echte App – kostenlos und ohne App Store.',
+  'app.ios1': 'Tippe auf den Teilen-Button',
+  'app.ios2': 'Wähle «Zum Home-Bildschirm»',
+  'app.ios3': 'Bestätige mit «Hinzufügen»',
+  'app.later': 'Später',
+  'app.ok': 'Verstanden',
 }
 
 const fr: Dict = {
@@ -582,7 +607,7 @@ const fr: Dict = {
   'footer.made': 'Made in Grisons',
   'lang.label': 'Langue',
 
-  'home.eyebrow': 'Gratuit · Aucune app à installer',
+  'home.eyebrow': 'Gratuit · Prêt tout de suite, aussi en app',
   'home.title1': 'Des photos prêtes pour les réseaux,',
   'home.title2': 'en 30 secondes.',
   'home.lead': 'Choisis ce que tu veux créer, ajoute une photo, enregistre. Fonctionne sur smartphone et desktop.',
@@ -756,6 +781,14 @@ const fr: Dict = {
   'gate.cancel': 'Annuler',
   'gate.continue': 'Continuer',
   'gate.wait': 'Un instant…',
+  'app.install': 'Installer l’app',
+  'app.title': 'PostKit comme une app',
+  'app.text': 'Ajoute-la à l’écran d’accueil : elle s’ouvre en plein écran comme une vraie app, gratuitement et sans store.',
+  'app.ios1': 'Touche le bouton Partager',
+  'app.ios2': 'Choisis « Sur l’écran d’accueil »',
+  'app.ios3': 'Confirme avec « Ajouter »',
+  'app.later': 'Plus tard',
+  'app.ok': 'Compris',
 }
 
 export type Lang = 'it' | 'en' | 'de' | 'fr'

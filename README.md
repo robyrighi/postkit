@@ -23,6 +23,10 @@ Ogni strumento ha 8 filtri (B/N, vivido, caldo, freddo, matte, pellicola…), zo
 - **Content Security Policy** restrittiva sulla build: script solo dal sito, connessioni solo verso Supabase e il modello MediaPipe.
 - Font self-hosted (nessuna richiesta a Google Fonts).
 
+## App
+
+PostKit è una **PWA**: si installa sulla schermata Home (Android: pulsante "Installa l'app"; iPhone: Condividi → Aggiungi alla schermata Home), si apre a tutto schermo e funziona anche offline. Il service worker (`public/sw.js`) mette in cache solo i file dell'app, mai le foto.
+
 ## Salvataggio
 
 | Dispositivo | Comportamento |

@@ -54,6 +54,8 @@ const MODULES: Record<string, string> = {
   carousel: '🎞️ Panoramica',
   home: '🏠 Home',
   privacy: '🔒 Privacy',
+  app: '📲 App',
+  lang: '🌐 Lingua',
 }
 const EVENTS: Record<string, string> = {
   open: 'ha aperto',
@@ -68,6 +70,13 @@ const EVENTS: Record<string, string> = {
   drag: 'ha spostato il testo',
   behind_on: 'ha attivato testo dietro la persona',
   ai_error: 'errore IA (non disponibile)',
+  change: 'ha cambiato',
+  open_standalone: 'ha aperto da app installata',
+  install_click: 'ha toccato “Installa”',
+  install_accepted: 'ha installato',
+  install_dismissed: 'ha rifiutato l’installazione',
+  install_dismiss: 'ha chiuso il banner',
+  installed: 'installata ✅',
 }
 const PLATFORM: Record<string, string> = {
   ios: '📱 iPhone/iPad',

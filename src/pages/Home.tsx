@@ -1,3 +1,4 @@
+import { InstallApp } from '../components/InstallApp'
 import { useI18n, type Key } from '../i18n'
 
 const B = import.meta.env.BASE_URL
@@ -65,6 +66,8 @@ export function Home() {
           </a>
         ))}
       </section>
+
+      <InstallApp />
 
       <section className="trust">
         <div>
