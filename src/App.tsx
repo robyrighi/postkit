@@ -5,6 +5,7 @@ import { Logo } from './components/Logo'
 import { ProfileGateProvider } from './components/ProfileGate'
 import { I18nProvider, LANGS, useI18n, type Key, type Lang } from './i18n'
 import { register, touchVisitor, track } from './lib/api'
+import { trackArrival } from './lib/channel'
 import { getProfile } from './lib/visitor'
 import { Home } from './pages/Home'
 import { Privacy } from './pages/Privacy'
@@ -72,7 +73,8 @@ function Shell() {
   const { t } = useI18n()
 
   useEffect(() => {
-    touchVisitor()
+    // prima il visitatore, poi l'evento di arrivo (evita doppie creazioni in parallelo)
+    touchVisitor().then(trackArrival)
     if (isStandalone()) track('app', 'open_standalone')
     // Registrazione rimasta in sospeso (es. rete assente al primo download)
     const p = getProfile()

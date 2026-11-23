@@ -400,7 +400,7 @@ export function TextStudio() {
               </label>
             </details>
 
-            <div className="row wrap">
+            <div className="row wrap actions">
               <button className="btn primary big" onClick={prepare} disabled={busy || (behind && ai === 'loading')}>
                 {busy ? t('common.preparing') : t('text.create')}
               </button>

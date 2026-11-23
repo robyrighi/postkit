@@ -201,7 +201,7 @@ export function CarouselSplitter() {
               />
             </Field>
 
-            <div className="row wrap">
+            <div className="row wrap actions">
               <button className="btn primary big" onClick={prepare} disabled={busy}>
                 {busy ? t('common.preparing') : t('car.create', { n: slides })}
               </button>

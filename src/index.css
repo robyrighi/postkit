@@ -1372,3 +1372,41 @@ details.more[open] > :not(summary) {
   font-weight: 700;
   color: var(--accent2);
 }
+
+/* Barra azioni fissa in basso su mobile: il pulsante "Crea" è sempre a portata di pollice */
+@media (max-width: 860px) {
+  .panel > .actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 12;
+    margin: 0 -20px -20px;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: rgba(13, 11, 20, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 var(--r) var(--r);
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+  .panel > .actions .btn.primary {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .panel > .actions > :not(.btn.primary) {
+    flex: 0 0 auto;
+  }
+  /* "Cambia foto" diventa solo icona, così "Crea" resta su una riga */
+  .panel > .actions .drop.compact {
+    padding: 0 18px;
+    min-height: 56px;
+  }
+  .panel > .actions .drop.compact > span:not(.drop-icon) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}

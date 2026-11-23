@@ -23,6 +23,13 @@ interface Stats {
   languages: { lang: string; n: number }[]
   feedback: { created_at: string; module: string; score: number; comment: string | null; name: string | null; email: string | null }[]
 }
+interface Channel {
+  ch: string
+  visitors: number
+  created: number
+  saved: number
+}
+
 interface Funnel {
   visitors: number
   tool_open: number
@@ -270,6 +277,7 @@ function Dashboard({ session }: { session: Session }) {
   const [tab, setTab] = useState<Tab>('overview')
   const [stats, setStats] = useState<Stats | null>(null)
   const [funnel, setFunnel] = useState<Funnel | null>(null)
+  const [channels, setChannels] = useState<Channel[]>([])
   const [events, setEvents] = useState<EventRow[]>([])
   const [visitors, setVisitors] = useState<VisitorRow[]>([])
   const [error, setError] = useState('')
@@ -283,11 +291,12 @@ function Dashboard({ session }: { session: Session }) {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const [s, e, v, f] = await Promise.all([
+    const [s, e, v, f, ch] = await Promise.all([
       supabase.rpc('pk_admin_stats', { p_days: 30 }),
       supabase.rpc('pk_admin_events', { p_limit: 500, p_module: modFilter || null, p_visitor: visitorFilter?.id ?? null }),
       supabase.rpc('pk_admin_visitors', { p_limit: 2000 }),
       supabase.rpc('pk_admin_funnel', { p_days: 30 }),
+      supabase.rpc('pk_admin_channels', { p_days: 30 }),
     ])
     setLoading(false)
     const err = s.error ?? e.error ?? v.error
@@ -300,6 +309,7 @@ function Dashboard({ session }: { session: Session }) {
     setEvents((e.data as EventRow[]) ?? [])
     setVisitors((v.data as VisitorRow[]) ?? [])
     if (!f.error) setFunnel(f.data as Funnel)
+    if (!ch.error) setChannels((ch.data as Channel[]) ?? [])
     setUpdated(new Date())
   }, [modFilter, visitorFilter])
 
@@ -425,6 +435,37 @@ function Dashboard({ session }: { session: Session }) {
               />
             </div>
           )}
+          <div className="card">
+            <h3>Canali di arrivo (30 giorni)</h3>
+            <p className="muted small">
+              Da dove arrivano le persone. Per i tuoi link usa <code>pizkit.com/?da=nome</code> (es. <code>?da=ig-bio</code>,{' '}
+              <code>?da=wa</code>, <code>?da=volantino</code>).
+            </p>
+            {channels.length ? (
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th>Canale</th>
+                    <th>Persone</th>
+                    <th>Creano</th>
+                    <th>Salvano</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {channels.map((c) => (
+                    <tr key={c.ch}>
+                      <td>{c.ch}</td>
+                      <td>{c.visitors}</td>
+                      <td>{c.created}</td>
+                      <td>{c.saved}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="muted small">Ancora nessun dato: si riempie con le nuove visite.</p>
+            )}
+          </div>
           <div className="admin-grid">
             <div className="card">
               <h3>Strumenti</h3>

@@ -484,7 +484,7 @@ export function SportCard() {
               </label>
             </details>
 
-            <div className="row wrap">
+            <div className="row wrap actions">
               <button className="btn primary big" onClick={prepare} disabled={busy}>
                 {busy ? t('common.preparing') : t('sport.create')}
               </button>
