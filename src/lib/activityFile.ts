@@ -13,6 +13,10 @@ export interface ActivityData {
   date?: Date
   sport?: SportGuess
   name?: string
+  /** Secondi in zona cardiaca Z1..Z5 (solo FIT) */
+  hrZones?: number[]
+  /** Training Effect aerobico, es. 4.2 (solo FIT Garmin) */
+  teAerobic?: number
   points: [number, number][] // [lat, lon]
 }
 
@@ -137,7 +141,22 @@ export async function parseFit(buf: ArrayBuffer): Promise<ActivityData> {
   const kcal = s?.total_calories as number | undefined
   const pw = s?.avg_power as number | undefined
   const start = (s?.start_time ?? records[0]?.timestamp) as Date | string | undefined
+  // Tempo nelle zone cardiache: messaggio "time_in_zone" riferito alla sessione, altrimenti il campo della sessione
+  const tiz = ((data as unknown as Record<string, unknown>).time_in_zone ?? []) as Record<string, unknown>[]
+  const tzMsg =
+    tiz.find((m) => m.reference_mesg === 'session' || m.reference_mesg === 18) ?? tiz[tiz.length - 1]
+  const raw = (tzMsg?.time_in_hr_zone ?? (s as unknown as Record<string, unknown> | undefined)?.time_in_hr_zone) as number[] | number | undefined
+  let hrZones: number[] | undefined
+  if (Array.isArray(raw) && raw.length >= 5) {
+    // Garmin: indice 0 = sotto la Z1, poi Z1..Z5 (6 valori); con 5 valori sono già Z1..Z5
+    const z = (raw.length >= 6 ? raw.slice(1, 6) : raw.slice(0, 5)).map((v) => (typeof v === 'number' && isFinite(v) ? v : 0))
+    if (z.some((v) => v > 0)) hrZones = z
+  }
+  const teRaw = ((s as unknown as Record<string, unknown> | undefined)?.total_training_effect) as number | undefined
+  const teAerobic = typeof teRaw === 'number' && teRaw > 0 && teRaw <= 5 ? Math.round(teRaw * 10) / 10 : undefined
   return {
+    hrZones,
+    teAerobic,
     points,
     distanceKm: typeof dist === 'number' ? dist / 1000 : undefined,
     durationSec: typeof timer === 'number' ? timer : undefined,

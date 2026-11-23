@@ -1444,3 +1444,41 @@ details.more[open] > :not(summary) {
   justify-content: center;
   font-weight: 700;
 }
+
+/* Zone cardiache (card sport) */
+.zones-box {
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.zones-box summary {
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+}
+.zones-box summary::-webkit-details-marker {
+  display: none;
+}
+.zones-box summary::after {
+  content: ' ▾';
+  opacity: 0.6;
+}
+.zones-box[open] summary::after {
+  content: ' ▴';
+}
+.zones-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 12px 0 6px;
+}
+.zones-grid label {
+  font-weight: 800;
+  font-size: 14px;
+}
+.zones-grid input {
+  margin-top: 4px;
+  width: 100%;
+}

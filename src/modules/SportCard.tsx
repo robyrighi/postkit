@@ -19,7 +19,7 @@ import {
   type Source,
 } from '../lib/image'
 import { drawBadge, drawOverlay, loadAllFonts, pickContrast } from '../lib/templates'
-import { fmtDuration, humanDuration, parseTimeSmart } from '../lib/time'
+import { fmtDuration, humanDuration, parseDuration, parseTimeSmart } from '../lib/time'
 import { drawRoute, readActivityFile } from '../lib/activityFile'
 
 const MODULE = 'sport'
@@ -38,6 +38,9 @@ type SportId = (typeof SPORTS)[number]['id']
 type Layout = 'classic' | 'bignum' | 'poster' | 'minimal'
 const LAYOUTS: Layout[] = ['classic', 'bignum', 'poster', 'minimal']
 const ACCENTS = ['#ffffff', '#fc5200', '#ffd400', '#80ed99', '#4cc9f0', '#ff7eb6']
+
+// Colori zone cardiache (come Garmin): Z1 … Z5
+const ZONE_COLORS = ['#e9e6f0', '#3b8cff', '#3ecf6b', '#ff7a2f', '#ff3b4e']
 
 interface Stat {
   value: string
@@ -65,6 +68,9 @@ export function SportCard() {
   const [kcal, setKcal] = useState('')
   const [power, setPower] = useState('')
   const [badge, setBadge] = useState(true)
+  const [zones, setZones] = useState<string[]>(['', '', '', '', ''])
+  const [te, setTe] = useState('')
+  const [showZones, setShowZones] = useState(true)
   const [route, setRoute] = useState<[number, number][] | null>(null)
   const [showRoute, setShowRoute] = useState(true)
   const [importMsg, setImportMsg] = useState<{ ok: boolean; text: string } | null>(null)
@@ -129,6 +135,9 @@ export function SportCard() {
       setHr(a.avgHr ? String(Math.round(a.avgHr)) : '')
       setKcal(a.kcal ? String(Math.round(a.kcal)) : '')
       setPower(a.avgPower ? String(Math.round(a.avgPower)) : '')
+      setZones(a.hrZones ? a.hrZones.map((v) => (v >= 1 ? fmtDuration(Math.round(v)) : '')) : ['', '', '', '', ''])
+      setTe(a.teAerobic ? dec(a.teAerobic.toFixed(1)) : '')
+      if (a.hrZones) setShowZones(true)
       if (a.date) setDate(a.date.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' }))
       if (a.sport) setSport(a.sport)
       if (a.name && titleRaw === null) setTitle(a.name.slice(0, 60))
@@ -165,6 +174,13 @@ export function SportCard() {
     return out
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [km, time, elev, hr, kcal, power, sp.pace, sport, t, locale])
+
+  // Secondi in zona Z1..Z5 (null se la sezione è vuota)
+  const zoneSecs = useMemo(() => {
+    const v = zones.map((z) => (z.trim() ? (parseDuration(z) ?? 0) : 0))
+    return v.filter((x) => x > 0).length >= 2 ? v : null
+  }, [zones])
+  const teNum = num(te)
 
   const base = useMemo(() => {
     if (!img) return null
@@ -215,13 +231,67 @@ export function SportCard() {
       drawRoute(ctx, route, { x: (w - bw) / 2, y: y1 - bh, w: bw, h: bh }, accent, rw)
     }
 
+    // Blocco zone cardiache: barre Z5→Z1. Restituisce l'altezza occupata.
+    const zonesOn = !!zoneSecs && showZones
+    const zoneH = (k: number) => w * (0.045 + 5 * 0.036) * k
+    const drawZones = (x: number, y: number, bw: number, k = 1, ink = '#fff') => {
+      if (!zoneSecs || !showZones) return
+      const maxS = Math.max(...zoneSecs, 1)
+      const fs = w * 0.022 * k
+      ctx.textAlign = 'left'
+      ctx.fillStyle = ink
+      ctx.globalAlpha = 0.8
+      ctx.font = `600 ${Math.round(fs)}px "Montserrat", sans-serif`
+      setSpacing(ctx, fs * 0.12)
+      ctx.fillText(t('sport.zonesLbl').toUpperCase(), x, y + fs)
+      if (teNum) {
+        ctx.textAlign = 'right'
+        ctx.fillText(`TE ${dec(teNum.toFixed(1))}`, x + bw, y + fs)
+      }
+      ctx.globalAlpha = 1
+      setSpacing(ctx, 0)
+      const rowH = w * 0.036 * k
+      const barH = w * 0.016 * k
+      const labW = w * 0.06 * k
+      const timeW = w * 0.12 * k
+      const trackW = bw - labW - timeW
+      let yy = y + w * 0.045 * k
+      for (let zi = 4; zi >= 0; zi--) {
+        const sec = zoneSecs[zi]
+        const cy = yy + rowH / 2
+        ctx.textAlign = 'left'
+        ctx.fillStyle = ZONE_COLORS[zi]
+        ctx.font = `800 ${Math.round(fs * 1.05)}px "Inter", sans-serif`
+        ctx.fillText(`Z${zi + 1}`, x, cy + fs * 0.38)
+        ctx.globalAlpha = 0.18
+        ctx.fillStyle = ink
+        ctx.beginPath()
+        ctx.roundRect(x + labW, cy - barH / 2, trackW, barH, barH / 2)
+        ctx.fill()
+        ctx.globalAlpha = 1
+        if (sec > 0) {
+          ctx.fillStyle = ZONE_COLORS[zi]
+          ctx.beginPath()
+          ctx.roundRect(x + labW, cy - barH / 2, Math.max(barH, (trackW * sec) / maxS), barH, barH / 2)
+          ctx.fill()
+        }
+        ctx.fillStyle = ink
+        ctx.textAlign = 'right'
+        ctx.font = `700 ${Math.round(fs * 1.05)}px "Inter", sans-serif`
+        ctx.fillText(sec > 0 ? fmtDuration(sec) : '–', x + bw, cy + fs * 0.38)
+        yy += rowH
+      }
+      ctx.textAlign = 'left'
+    }
+
     if (layout === 'classic') {
-      drawOverlay(ctx, w, h, 'bottom', 1.1)
+      drawOverlay(ctx, w, h, 'bottom', zonesOn ? 1.35 : 1.1)
       const cols = Math.min(stats.length, stats.length > 3 ? 2 : 3) || 1
       const rows = Math.ceil(stats.length / cols)
       const valPx = w * (cols === 3 ? 0.075 : 0.085)
       const rowH = valPx * 1.75
-      const statsTop = h - m - rows * rowH
+      const zH = zonesOn ? zoneH(1) + w * 0.02 : 0
+      const statsTop = h - m - rows * rowH - zH
       routeIn(m * 1.2, statsTop - w * 0.27)
       ctx.textAlign = 'left'
       ctx.fillStyle = accent
@@ -240,6 +310,7 @@ export function SportCard() {
         const x = m + col * ((w - 2 * m) / cols)
         statBlock(x, statsTop + row * rowH + valPx * 1.25, s, valPx, '#fff')
       })
+      drawZones(m, statsTop + rows * rowH + w * 0.01, w - 2 * m)
     } else if (layout === 'bignum') {
       drawOverlay(ctx, w, h, 'top', 1.2)
       const main = stats[0]
@@ -270,6 +341,10 @@ export function SportCard() {
       setSpacing(ctx, 0)
       ctx.textAlign = 'left'
       ctx.fillText(`${title} — ${date}`, m, yy + w * 0.01, w - 2 * m)
+      if (zonesOn) {
+        drawZones(m, yy + w * 0.05, w - 2 * m)
+        yy += zoneH(1) + w * 0.05
+      }
       routeIn(yy + w * 0.08, h - m * 1.5)
     } else if (layout === 'poster') {
       drawOverlay(ctx, w, h, 'top', 0.9)
@@ -293,8 +368,18 @@ export function SportCard() {
       const n = Math.max(1, Math.min(4, stats.length))
       const bandH = w * 0.27
       const by = h - bandH - m * 0.6
-      routeIn(m + px * 0.85 + w * 0.12, by - w * 0.08)
-      badgeBottom = by - w * 0.005
+      const zTop = zonesOn ? by - zoneH(1) - w * 0.04 : by
+      if (zonesOn) {
+        ctx.save()
+        ctx.fillStyle = 'rgba(0,0,0,0.45)'
+        ctx.beginPath()
+        ctx.roundRect(m * 0.6, zTop - w * 0.02, w - m * 1.2, zoneH(1) + w * 0.035, w * 0.02)
+        ctx.fill()
+        ctx.restore()
+        drawZones(m, zTop, w - 2 * m)
+      }
+      routeIn(m + px * 0.85 + w * 0.12, zTop - w * 0.08)
+      badgeBottom = (zonesOn ? zTop - w * 0.02 : by) - w * 0.005
       ctx.fillStyle = accent
       ctx.fillRect(m * 0.6, by, w - m * 1.2, bandH)
       const ink = pickContrast(accent)
@@ -304,8 +389,11 @@ export function SportCard() {
         statBlock(m * 0.6 + cw * i + cw * 0.12, by + bandH / 2 + valPx * 0.75, s, valPx, ink)
       })
     } else {
-      drawOverlay(ctx, w, h, 'bottom', 0.8)
-      routeIn(m * 1.2, h - m - w * 0.3)
+      drawOverlay(ctx, w, h, 'bottom', zonesOn ? 1.15 : 0.8)
+      const zk = 0.85
+      const zY = h - m - w * 0.27 - (zonesOn ? zoneH(zk) : 0)
+      if (zonesOn) drawZones(w * 0.18, zY, w * 0.64, zk)
+      routeIn(m * 1.2, zY - w * 0.04)
       ctx.textAlign = 'center'
       ctx.fillStyle = '#fff'
       ctx.font = `700 ${Math.round(w * 0.05)}px "Inter", sans-serif`
@@ -333,7 +421,7 @@ export function SportCard() {
     p.height = c.height
     ctx2d(p).drawImage(c, 0, 0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [base, layout, accent, title, date, stats, badge, fontsOk, sport, t, route, showRoute])
+  }, [base, layout, accent, title, date, stats, badge, fontsOk, sport, t, route, showRoute, zoneSecs, showZones, te])
 
   async function prepare() {
     const ok = await ensureProfile(MODULE)
@@ -452,6 +540,40 @@ export function SportCard() {
                 </label>
               </div>
               <p className="muted small">{sport === 'spin' ? t('sport.hintSpin') : sp.pace ? t('sport.hintPace') : t('sport.hintSpeed')}</p>
+
+              <details className="zones-box" open={zones.some((z) => z.trim() !== '')}>
+                <summary>❤️ {t('sport.zones')}</summary>
+                <div className="zones-grid">
+                  {[4, 3, 2, 1, 0].map((zi) => (
+                    <label key={zi} style={{ color: ZONE_COLORS[zi] }}>
+                      Z{zi + 1}
+                      <input
+                        inputMode="numeric"
+                        value={zones[zi]}
+                        placeholder="mm:ss"
+                        onChange={(e) => {
+                          const v = [...zones]
+                          v[zi] = e.target.value
+                          setZones(v)
+                          reset()
+                        }}
+                      />
+                    </label>
+                  ))}
+                  <label>
+                    TE
+                    <input inputMode="decimal" value={te} placeholder="4,2" onChange={(e) => (setTe(e.target.value), reset())} />
+                  </label>
+                </div>
+                <p className="muted small">{t('sport.zonesHint')}</p>
+                {zoneSecs && (
+                  <label className="toggle">
+                    <input type="checkbox" checked={showZones} onChange={(e) => (setShowZones(e.target.checked), reset())} />
+                    <span className="toggle-ui" />
+                    <span>{t('sport.showZones')}</span>
+                  </label>
+                )}
+              </details>
             </Field>
 
             <Field label={t('sport.step3')}>
