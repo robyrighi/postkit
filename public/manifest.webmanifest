@@ -1,6 +1,6 @@
 {
-  "name": "PeakKit — foto pronte per i social",
-  "short_name": "PeakKit",
+  "name": "PizKit — foto pronte per i social",
+  "short_name": "PizKit",
   "description": "Card sport con percorso GPX, testo sulle foto e panoramiche divise per Instagram. Gratis, le foto restano sul tuo dispositivo.",
   "id": "/postkit/",
   "start_url": "./",

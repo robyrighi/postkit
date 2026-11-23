@@ -1,4 +1,4 @@
-# PeakKit
+# PizKit
 
 > Repository: `robyrighi/postkit` (nome storico).
 
@@ -28,7 +28,7 @@ Ogni strumento ha 8 filtri (B/N, vivido, caldo, freddo, matte, pellicola…), zo
 
 ## App
 
-PeakKit è una **PWA**: si installa sulla schermata Home (Android: pulsante "Installa l'app"; iPhone: Condividi → Aggiungi alla schermata Home), si apre a tutto schermo e funziona anche offline. Il service worker (`public/sw.js`) mette in cache solo i file dell'app, mai le foto.
+PizKit è una **PWA**: si installa sulla schermata Home (Android: pulsante "Installa l'app"; iPhone: Condividi → Aggiungi alla schermata Home), si apre a tutto schermo e funziona anche offline. Il service worker (`public/sw.js`) mette in cache solo i file dell'app, mai le foto.
 
 ## Salvataggio
 

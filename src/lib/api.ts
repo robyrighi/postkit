@@ -13,10 +13,10 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 async function rpc(fn: string, args: Record<string, unknown>) {
   try {
     const { error } = await supabase.rpc(fn, args)
-    if (error) console.warn(`[peakkit] ${fn}:`, error.message)
+    if (error) console.warn(`[pizkit] ${fn}:`, error.message)
     return !error
   } catch (e) {
-    console.warn(`[peakkit] ${fn}:`, e)
+    console.warn(`[pizkit] ${fn}:`, e)
     return false
   }
 }

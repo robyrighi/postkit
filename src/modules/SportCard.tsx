@@ -323,7 +323,7 @@ export function SportCard() {
     try {
       const c = compose()
       if (!c) return
-      setFiles([await canvasToFile(c, `peakkit-sport-${stamp()}.jpg`)])
+      setFiles([await canvasToFile(c, `pizkit-sport-${stamp()}.jpg`)])
       track(MODULE, 'export', { format, layout, sport, filter, km: num(km), time, sec: tt })
     } catch {
       setError(t('common.genericError'))
@@ -495,7 +495,7 @@ export function SportCard() {
         </div>
       )}
       {error && !img && <p className="error">{error}</p>}
-      {files && <ExportPanel module={MODULE} files={files} zipName="peakkit-sport.zip" onClose={reset} />}
+      {files && <ExportPanel module={MODULE} files={files} zipName="pizkit-sport.zip" onClose={reset} />}
     </section>
   )
 }

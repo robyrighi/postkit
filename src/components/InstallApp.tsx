@@ -1,4 +1,4 @@
-// Invito a installare PeakKit come app (PWA).
+// Invito a installare PizKit come app (PWA).
 // - Android / Chrome desktop: pulsante che apre il prompt di installazione del sistema
 // - iPhone/iPad (Safari): istruzioni passo passo "Condividi → Aggiungi alla schermata Home"
 // Non compare se l'app è già installata o se l'utente l'ha chiusa.

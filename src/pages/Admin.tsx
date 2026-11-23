@@ -136,7 +136,7 @@ function downloadCsv(rows: VisitorRow[]) {
   const blob = new Blob(['﻿' + [head.join(';'), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = `peakkit-utenti-${new Date().toISOString().slice(0, 10)}.csv`
+  a.download = `pizkit-utenti-${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   setTimeout(() => URL.revokeObjectURL(a.href), 3000)
 }

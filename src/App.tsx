@@ -100,7 +100,7 @@ function Shell() {
         <a href="#/" className="brand">
           <Logo size={38} />
           <span className="brand-name">
-            Peak<span className="grad">Kit</span>
+            Piz<span className="grad">Kit</span>
           </span>
         </a>
         <div className="nav-right">

@@ -31,7 +31,7 @@ const DOCS: Record<Lang, Doc> = {
       {
         h: 'Cosa raccogliamo',
         li: [
-          'Nome ed email: solo dal secondo download in poi (la prima immagine è libera). Servono a sapere chi usa PeakKit. Non li vendiamo né li cediamo a nessuno.',
+          'Nome ed email: solo dal secondo download in poi (la prima immagine è libera). Servono a sapere chi usa PizKit. Non li vendiamo né li cediamo a nessuno.',
           'Email di novità: solo se spunti la casella facoltativa (al massimo qualche email all’anno). Puoi revocare il consenso in ogni momento scrivendo all’indirizzo qui sotto.',
           'Statistiche d’uso: quale strumento apri, quali opzioni scegli, quante immagini crei e salvi, tipo di dispositivo e lingua. Mai il contenuto delle foto o il testo che scrivi.',
           'Valutazioni: la faccina e il commento, se decidi di lasciarli.',
@@ -69,7 +69,7 @@ const DOCS: Record<Lang, Doc> = {
       {
         h: 'What we collect',
         li: [
-          'Name and email: only from your second download on (the first image is free). They help us know who uses PeakKit. We never sell or share them.',
+          'Name and email: only from your second download on (the first image is free). They help us know who uses PizKit. We never sell or share them.',
           'Update emails: only if you tick the optional box (a few emails a year at most). You can withdraw your consent at any time by writing to the address below.',
           'Usage statistics: which tool you open, which options you choose, how many images you create and save, device type and language. Never the content of your photos or the text you write.',
           'Ratings: the face and comment, if you choose to leave them.',
@@ -107,7 +107,7 @@ const DOCS: Record<Lang, Doc> = {
       {
         h: 'Was wir erfassen',
         li: [
-          'Name und E-Mail: erst ab dem zweiten Download (das erste Bild ist frei). So wissen wir, wer PeakKit nutzt. Wir verkaufen oder teilen sie nie.',
+          'Name und E-Mail: erst ab dem zweiten Download (das erste Bild ist frei). So wissen wir, wer PizKit nutzt. Wir verkaufen oder teilen sie nie.',
           'E-Mails zu Neuigkeiten: nur wenn du das optionale Kästchen ankreuzt (höchstens ein paar E-Mails pro Jahr). Du kannst die Einwilligung jederzeit widerrufen, indem du an die Adresse unten schreibst.',
           'Nutzungsstatistiken: welches Werkzeug du öffnest, welche Optionen du wählst, wie viele Bilder du erstellst und speicherst, Gerätetyp und Sprache. Nie der Inhalt deiner Fotos oder der Text, den du schreibst.',
           'Bewertungen: das Gesicht und der Kommentar, falls du sie hinterlässt.',
@@ -145,7 +145,7 @@ const DOCS: Record<Lang, Doc> = {
       {
         h: 'Ce que nous collectons',
         li: [
-          'Nom et e-mail : seulement à partir du deuxième téléchargement (la première image est libre). Ils nous permettent de savoir qui utilise PeakKit. Nous ne les vendons ni ne les cédons jamais.',
+          'Nom et e-mail : seulement à partir du deuxième téléchargement (la première image est libre). Ils nous permettent de savoir qui utilise PizKit. Nous ne les vendons ni ne les cédons jamais.',
           'E-mails de nouveautés : seulement si tu coches la case facultative (quelques e-mails par an au maximum). Tu peux retirer ton consentement à tout moment en écrivant à l’adresse ci-dessous.',
           'Statistiques d’utilisation : quel outil tu ouvres, quelles options tu choisis, combien d’images tu crées et enregistres, type d’appareil et langue. Jamais le contenu de tes photos ni le texte que tu écris.',
           'Évaluations : le visage et le commentaire, si tu choisis de les laisser.',

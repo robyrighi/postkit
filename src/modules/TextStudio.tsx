@@ -222,7 +222,7 @@ export function TextStudio() {
     try {
       const c = compose()
       if (!c) return
-      setFiles([await canvasToFile(c, `peakkit-text-${stamp()}.jpg`)])
+      setFiles([await canvasToFile(c, `pizkit-text-${stamp()}.jpg`)])
       track(MODULE, 'export', { format, tpl: tplId, filter, behind })
     } catch {
       setError(t('common.genericError'))
@@ -411,7 +411,7 @@ export function TextStudio() {
         </div>
       )}
       {error && !img && <p className="error">{error}</p>}
-      {files && <ExportPanel module={MODULE} files={files} zipName="peakkit-text.zip" onClose={reset} />}
+      {files && <ExportPanel module={MODULE} files={files} zipName="pizkit-text.zip" onClose={reset} />}
     </section>
   )
 }

@@ -349,8 +349,8 @@ export function pickContrast(hex: string): string {
   return 0.299 * r + 0.587 * g + 0.114 * b > 150 ? '#111111' : '#ffffff'
 }
 
-/** Piccola firma "creato con PeakKit" (si può disattivare). */
-export function drawBadge(ctx: CanvasRenderingContext2D, w: number, h: number, text = 'creato con PeakKit') {
+/** Piccola firma "creato con PizKit" (si può disattivare). */
+export function drawBadge(ctx: CanvasRenderingContext2D, w: number, h: number, text = 'creato con PizKit') {
   const px = Math.round(w * 0.022)
   ctx.save()
   ctx.font = `600 ${px}px "Inter", sans-serif`

@@ -119,7 +119,7 @@ export function CarouselSplitter() {
       const strip = renderStrip(1)
       const sl = SLIDE[ratio]
       const out: File[] = []
-      const base = `peakkit-carousel-${stamp()}`
+      const base = `pizkit-carousel-${stamp()}`
       for (let i = 0; i < slides; i++) {
         const c = makeCanvas(sl.w, sl.h)
         ctx2d(c).drawImage(strip, i * sl.w, 0, sl.w, sl.h, 0, 0, sl.w, sl.h)
@@ -213,7 +213,7 @@ export function CarouselSplitter() {
       )}
       {error && !img && <p className="error">{error}</p>}
 
-      {files && <ExportPanel module={MODULE} files={files} zipName="peakkit-carousel.zip" onClose={reset} />}
+      {files && <ExportPanel module={MODULE} files={files} zipName="pizkit-carousel.zip" onClose={reset} />}
     </section>
   )
 }

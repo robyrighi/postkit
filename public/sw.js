@@ -1,4 +1,4 @@
-// Service worker di PeakKit: rende l'app installabile e utilizzabile offline.
+// Service worker di PizKit: rende l'app installabile e utilizzabile offline.
 // Nessuna foto passa di qui: vengono messe in cache solo le parti dell'app.
 // Elenco generato in fase di build (vedi vite.config.ts): tutta l'app per l'uso offline
 const PRECACHE = [] /*__PK_PRECACHE__*/

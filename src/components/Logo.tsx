@@ -1,4 +1,4 @@
-// Logo PeakKit: monogramma PK dentro gli angoli di un mirino fotografico.
+// Logo PizKit: monogramma PK dentro gli angoli di un mirino fotografico.
 export function Logo({ size = 36 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" className="logo-mark">
