@@ -19,7 +19,7 @@ import {
   type Source,
 } from '../lib/image'
 import { drawBadge, drawOverlay, loadAllFonts, pickContrast } from '../lib/templates'
-import { fmtDuration, parseDuration } from '../lib/time'
+import { fmtDuration, humanDuration, parseTimeSmart } from '../lib/time'
 import { drawRoute, readActivityFile } from '../lib/activityFile'
 
 const MODULE = 'sport'
@@ -128,7 +128,7 @@ export function SportCard() {
   const stats = useMemo<Stat[]>(() => {
     const out: Stat[] = []
     const d = num(km)
-    const tt = parseDuration(time)
+    const tt = parseTimeSmart(time, d, sport)
     if (d) out.push({ value: dec(Number.isInteger(d) ? String(d) : d.toFixed(1)), unit: 'km', label: t('sport.lbl.distance') })
     if (tt) out.push({ value: fmtDuration(tt), unit: '', label: t('sport.lbl.time') })
     if (d && tt) {
@@ -145,7 +145,7 @@ export function SportCard() {
     if (kc) out.push({ value: Math.round(kc).toLocaleString(locale), unit: 'kcal', label: t('sport.lbl.kcal') })
     return out
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [km, time, elev, hr, kcal, power, sp.pace, t, locale])
+  }, [km, time, elev, hr, kcal, power, sp.pace, sport, t, locale])
 
   const base = useMemo(() => {
     if (!img) return null
@@ -324,7 +324,7 @@ export function SportCard() {
       const c = compose()
       if (!c) return
       setFiles([await canvasToFile(c, `peakkit-sport-${stamp()}.jpg`)])
-      track(MODULE, 'export', { format, layout, sport, filter, km: num(km), time })
+      track(MODULE, 'export', { format, layout, sport, filter, km: num(km), time, sec: tt })
     } catch {
       setError(t('common.genericError'))
     } finally {
@@ -332,7 +332,7 @@ export function SportCard() {
     }
   }
 
-  const tt = parseDuration(time)
+  const tt = parseTimeSmart(time, num(km), sport)
 
   return (
     <section className="module">
@@ -407,6 +407,7 @@ export function SportCard() {
                     placeholder={t('sport.timePh')}
                     className={time && !tt ? 'invalid' : ''}
                   />
+                  {tt ? <span className="time-read">= {humanDuration(tt)}</span> : null}
                 </label>
                 <label>
                   {t('sport.elev')}

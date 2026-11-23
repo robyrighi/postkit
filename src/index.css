@@ -1366,3 +1366,9 @@ details.more[open] > :not(summary) {
 .ok.small {
   font-size: 0.85rem;
 }
+
+.time-read {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent2);
+}
