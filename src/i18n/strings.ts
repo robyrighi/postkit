@@ -51,7 +51,7 @@ const it = {
   'common.moveV': 'Sposta foto ↕',
   'common.filter': 'Filtro foto',
   'common.badge': 'Firma “creato con PizKit”',
-  'common.badgeText': 'creato con PizKit',
+  'common.badgeText': 'creato con pizkit.com',
   'common.color': 'Colore',
   'common.customColor': 'Colore personalizzato',
 
@@ -270,7 +270,7 @@ const en: Dict = {
   'common.moveV': 'Move photo ↕',
   'common.filter': 'Photo filter',
   'common.badge': '“made with PizKit” signature',
-  'common.badgeText': 'made with PizKit',
+  'common.badgeText': 'made with pizkit.com',
   'common.color': 'Colour',
   'common.customColor': 'Custom colour',
 
@@ -478,7 +478,7 @@ const de: Dict = {
   'common.moveV': 'Foto verschieben ↕',
   'common.filter': 'Fotofilter',
   'common.badge': 'Signatur «erstellt mit PizKit»',
-  'common.badgeText': 'erstellt mit PizKit',
+  'common.badgeText': 'erstellt mit pizkit.com',
   'common.color': 'Farbe',
   'common.customColor': 'Eigene Farbe',
 
@@ -686,7 +686,7 @@ const fr: Dict = {
   'common.moveV': 'Déplacer la photo ↕',
   'common.filter': 'Filtre photo',
   'common.badge': 'Signature « créé avec PizKit »',
-  'common.badgeText': 'créé avec PizKit',
+  'common.badgeText': 'créé avec pizkit.com',
   'common.color': 'Couleur',
   'common.customColor': 'Couleur personnalisée',
 

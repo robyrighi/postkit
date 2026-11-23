@@ -63,8 +63,8 @@ function precache(): Plugin {
   }
 }
 
-// GitHub Pages pubblica su https://robyrighi.github.io/postkit/
+// GitHub Pages pubblica su https://pizkit.com/ (dominio personalizzato, file public/CNAME)
 export default defineConfig({
-  base: '/postkit/',
+  base: '/',
   plugins: [react(), csp(), precache()],
 })

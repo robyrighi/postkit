@@ -350,7 +350,7 @@ export function pickContrast(hex: string): string {
 }
 
 /** Piccola firma "creato con PizKit" (si può disattivare). */
-export function drawBadge(ctx: CanvasRenderingContext2D, w: number, h: number, text = 'creato con PizKit') {
+export function drawBadge(ctx: CanvasRenderingContext2D, w: number, h: number, text = 'creato con pizkit.com') {
   const px = Math.round(w * 0.022)
   ctx.save()
   ctx.font = `600 ${px}px "Inter", sans-serif`

@@ -4,7 +4,7 @@
 
 **Foto pronte per i social, in 30 secondi.** Gratis, senza app, e le foto non lasciano mai il tuo dispositivo.
 
-👉 **https://robyrighi.github.io/postkit/**
+👉 **https://pizkit.com/**
 
 | Strumento | Cosa fa |
 |---|---|
@@ -41,7 +41,7 @@ PizKit è una **PWA**: si installa sulla schermata Home (Android: pulsante "Inst
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173/postkit/
+npm run dev      # http://localhost:5173/
 npm run build    # output in dist/
 ```
 
@@ -51,7 +51,7 @@ Il deploy su GitHub Pages è automatico a ogni push su `main` (`.github/workflow
 
 ## Area admin
 
-`https://robyrighi.github.io/postkit/#/admin` — accesso con codice via email, solo per le email nella tabella `admins`.
+`https://pizkit.com/#/admin` — accesso con codice via email, solo per le email nella tabella `admins`.
 Panoramica, grafico 30 giorni, registro attività (chi ha fatto cosa, anche prima di registrarsi), utenti, feedback, export CSV.
 Il controllo è fatto nel database: senza email autorizzata le funzioni rispondono `not authorized`.
 
