@@ -1410,3 +1410,37 @@ details.more[open] > :not(summary) {
     white-space: nowrap;
   }
 }
+
+/* Home: pulsanti principali subito sotto il titolo */
+.hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+@media (max-width: 860px) {
+  .hero-cta {
+    flex-direction: column;
+  }
+  .hero-cta .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+/* Card sport in modalità esempio */
+.demo-note {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
+  border-radius: 14px;
+  background: rgba(255, 122, 47, 0.12);
+  border: 1px solid rgba(255, 122, 47, 0.45);
+  font-size: 15px;
+}
+.demo-note .drop.compact {
+  justify-content: center;
+  font-weight: 700;
+}

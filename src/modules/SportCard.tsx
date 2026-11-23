@@ -82,9 +82,26 @@ export function SportCard() {
     return isFinite(n) && n > 0 ? n : null
   }
 
+  const [isSample, setIsSample] = useState(false)
+
   useEffect(() => {
     track(MODULE, 'open')
     loadAllFonts().then(() => setFontsOk(true))
+    // Arrivo da "Guarda un esempio" in home: carica subito la foto d'esempio
+    let demo = false
+    try {
+      demo = sessionStorage.getItem('pk_demo') === 'sport'
+      sessionStorage.removeItem('pk_demo')
+    } catch {
+      /* storage non disponibile */
+    }
+    if (demo) {
+      fetch(`${import.meta.env.BASE_URL}samples/sport.jpg`)
+        .then((r) => r.blob())
+        .then((b) => onFile(new File([b], 'sport.jpg', { type: 'image/jpeg' })))
+        .catch(() => {})
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const reset = () => setFiles(null)
@@ -95,7 +112,9 @@ export function SportCard() {
       setImg(await loadImage(f))
       setFraming(defaultFraming)
       reset()
-      track(MODULE, 'upload', { sample: /^(sport|text|panorama)\.jpg$/.test(f.name) })
+      const sample = /^(sport|text|panorama)\.jpg$/.test(f.name)
+      setIsSample(sample)
+      track(MODULE, 'upload', { sample })
     } catch {
       setError(t('common.openError'))
     }
@@ -350,6 +369,12 @@ export function SportCard() {
           </div>
 
           <div className="panel">
+            {isSample && (
+              <div className="demo-note">
+                <span>👀 {t('sport.demoNote')}</span>
+                <FilePick onFile={onFile} label={t('sport.useOwn')} compact />
+              </div>
+            )}
             <Field label={t('sport.step1')}>
               <div className="chips">
                 {SPORTS.map((s) => (

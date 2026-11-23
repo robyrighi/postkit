@@ -21,7 +21,15 @@ async function rpc(fn: string, args: Record<string, unknown>) {
   }
 }
 
+/** Robot, crawler e browser automatici: non entrano nelle statistiche. */
+export const IS_BOT =
+  (typeof navigator !== 'undefined' && navigator.webdriver === true) ||
+  /bot|crawl|spider|slurp|headless|lighthouse|pagespeed|google-|facebookexternalhit|facebot|archive\.org|thumbnailer|preview|python|curl|wget|Nexus 5 Build\/MRA58N/i.test(
+    typeof navigator !== 'undefined' ? navigator.userAgent : '',
+  )
+
 export function touchVisitor() {
+  if (IS_BOT) return Promise.resolve(false)
   return rpc('pk_touch_visitor', {
     p_id: getVisitorId(),
     p_platform: platformLabel(),
@@ -31,6 +39,7 @@ export function touchVisitor() {
 }
 
 export function track(module: string, event: string, meta?: Record<string, unknown>) {
+  if (IS_BOT) return Promise.resolve(false)
   return rpc('pk_track', { p_id: getVisitorId(), p_module: module, p_event: event, p_meta: meta ?? null })
 }
 

@@ -1,5 +1,6 @@
 import { InstallApp } from '../components/InstallApp'
 import { useI18n, type Key } from '../i18n'
+import { track } from '../lib/api'
 
 const B = import.meta.env.BASE_URL
 
@@ -49,6 +50,25 @@ export function Home() {
           <span className="grad">{t('home.title2')}</span>
         </h1>
         <p className="lead">{t('home.lead')}</p>
+        <div className="hero-cta">
+          <a href="#/sport" className="btn primary big" onClick={() => track('home', 'cta_main')}>
+            🏃 {t('home.cta.main')}
+          </a>
+          <a
+            href="#/sport"
+            className="btn ghost"
+            onClick={() => {
+              track('home', 'cta_demo')
+              try {
+                sessionStorage.setItem('pk_demo', 'sport')
+              } catch {
+                /* storage non disponibile */
+              }
+            }}
+          >
+            👀 {t('home.cta.demo')}
+          </a>
+        </div>
       </section>
 
       <section className="tools">
