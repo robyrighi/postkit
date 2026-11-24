@@ -25,7 +25,7 @@ const DOCS: Record<Lang, Doc> = {
         li: [
           'Tutte le elaborazioni (ritaglio, filtri, testo, riconoscimento della persona, lettura dei file GPX/FIT) avvengono nel tuo browser.',
           'Le foto non vengono mai caricate su un server, né salvate su questo sito o altrove. Chiudendo la pagina spariscono.',
-          'Per l’effetto “testo dietro la persona” il browser scarica un modello di intelligenza artificiale (MediaPipe, di Google) che lavora sul tuo dispositivo: la foto non viene inviata a Google né a noi.',
+          'Per l’effetto “testo dietro la persona” e per lo sfondo sfocato o sostituito il browser scarica un modello di intelligenza artificiale (MediaPipe, di Google) che lavora sul tuo dispositivo: la foto non viene inviata a Google né a noi. La gomma magica usa un modello (MI-GAN) scaricato dal nostro sito e anch’esso lavora solo sul dispositivo. Anche i video vengono elaborati sul dispositivo e non vengono mai caricati.',
         ],
       },
       {
@@ -63,7 +63,7 @@ const DOCS: Record<Lang, Doc> = {
         li: [
           'All processing (cropping, filters, text, person detection, reading GPX/FIT files) happens in your browser.',
           'Photos are never uploaded to a server or stored on this site or anywhere else. They disappear when you close the page.',
-          'For the “text behind the person” effect, your browser downloads an AI model (MediaPipe, by Google) that runs on your device: the photo is not sent to Google or to us.',
+          'For the “text behind the person” effect and for blurred or replaced backgrounds, your browser downloads an AI model (MediaPipe, by Google) that runs on your device: the photo is not sent to Google or to us. The magic eraser uses a model (MI-GAN) downloaded from our site, which also runs only on your device. Videos are processed on your device too and are never uploaded.',
         ],
       },
       {
@@ -101,7 +101,7 @@ const DOCS: Record<Lang, Doc> = {
         li: [
           'Die gesamte Bearbeitung (Zuschnitt, Filter, Text, Personenerkennung, Lesen von GPX/FIT-Dateien) findet in deinem Browser statt.',
           'Fotos werden nie auf einen Server hochgeladen und weder auf dieser Website noch anderswo gespeichert. Beim Schliessen der Seite sind sie weg.',
-          'Für den Effekt «Text hinter der Person» lädt dein Browser ein KI-Modell (MediaPipe von Google), das auf deinem Gerät läuft: Das Foto wird weder an Google noch an uns gesendet.',
+          'Für den Effekt «Text hinter der Person» und für unscharfe oder ersetzte Hintergründe lädt dein Browser ein KI-Modell (MediaPipe von Google), das auf deinem Gerät läuft: Das Foto wird weder an Google noch an uns gesendet. Der Zauber-Radierer nutzt ein Modell (MI-GAN), das von unserer Website geladen wird und ebenfalls nur auf deinem Gerät läuft. Auch Videos werden auf deinem Gerät verarbeitet und nie hochgeladen.',
         ],
       },
       {
@@ -139,7 +139,7 @@ const DOCS: Record<Lang, Doc> = {
         li: [
           'Tous les traitements (recadrage, filtres, texte, détection de la personne, lecture des fichiers GPX/FIT) se font dans ton navigateur.',
           'Les photos ne sont jamais envoyées sur un serveur, ni enregistrées sur ce site ou ailleurs. Elles disparaissent quand tu fermes la page.',
-          'Pour l’effet « texte derrière la personne », ton navigateur télécharge un modèle d’intelligence artificielle (MediaPipe, de Google) qui fonctionne sur ton appareil : la photo n’est envoyée ni à Google ni à nous.',
+          'Pour l’effet « texte derrière la personne » et pour l’arrière-plan flou ou remplacé, ton navigateur télécharge un modèle d’intelligence artificielle (MediaPipe, de Google) qui fonctionne sur ton appareil : la photo n’est envoyée ni à Google ni à nous. La gomme magique utilise un modèle (MI-GAN) téléchargé depuis notre site, qui fonctionne lui aussi uniquement sur ton appareil. Les vidéos sont aussi traitées sur ton appareil et ne sont jamais envoyées.',
         ],
       },
       {

@@ -83,3 +83,9 @@ Foto d'esempio: [Unsplash](https://unsplash.com) (Unsplash License), tramite la 
 ## Licenza
 
 MIT
+
+
+## Librerie e modelli aggiuntivi
+- [Mediabunny](https://github.com/Vanilagy/mediabunny) (MPL-2.0): lettura/scrittura video MP4 nel browser.
+- [ONNX Runtime Web](https://github.com/microsoft/onnxruntime) (MIT): esecuzione del modello della gomma magica.
+- [MI-GAN](https://github.com/Picsart-AI-Research/MI-GAN) (MIT, Picsart AI Research): modello di inpainting, convertito in ONNX (`public/models/migan-512.onnx`, licenza in `public/models/MI-GAN-LICENSE.txt`).

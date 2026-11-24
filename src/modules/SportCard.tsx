@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { ColorRow, Field, FilePick, FilterChips, Segmented, Slider } from '../components/Controls'
 import { ExportPanel } from '../components/ExportPanel'
 import { useVideo, VideoTrim } from '../components/VideoControls'
+import { AiTools, useRetouch } from '../components/AiTools'
 import { useEnsureProfile } from '../components/ProfileGate'
 import { useI18n, type Key } from '../i18n'
 import { track } from '../lib/api'
@@ -82,6 +83,15 @@ export function SportCard() {
   const [error, setError] = useState('')
   const preview = useRef<HTMLCanvasElement>(null)
   const vid = useVideo((c) => setImg(c))
+  const rt = useRetouch({
+    module: MODULE,
+    img: vid.isVideo ? null : img,
+    width: FORMATS[format].w,
+    height: FORMATS[format].h,
+    framing,
+    onBake: (im, f) => (setImg(im), setFraming(f)),
+    onChange: () => setFiles(null),
+  })
   const ensureProfile = useEnsureProfile()
   const sp = SPORTS.find((s) => s.id === sport)!
   const dec = (s: string) => (lang === 'en' ? s : s.replace('.', ','))
@@ -208,9 +218,11 @@ export function SportCard() {
     ctx.fillStyle = '#000'
     ctx.fillRect(0, 0, w, h)
     drawCover(ctx, img, w, h, framing)
-    applyFilter(c, filter)
-    return c
-  }, [img, format, framing, filter])
+    const out = vid.isVideo ? c : rt.process(c)
+    applyFilter(out, filter)
+    return out
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [img, format, framing, filter, rt.key, vid.isVideo])
 
   /** withBase=false: solo grafica su sfondo trasparente (livello da sovrapporre al video) */
   function compose(withBase = true): HTMLCanvasElement | null {
@@ -439,8 +451,9 @@ export function SportCard() {
     p.width = c.width
     p.height = c.height
     ctx2d(p).drawImage(c, 0, 0)
+    rt.drawPaintPreview(ctx2d(p))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [base, layout, accent, title, date, stats, badge, fontsOk, sport, t, route, showRoute, zoneSecs, showZones, te])
+  }, [base, layout, accent, title, date, stats, badge, fontsOk, sport, t, route, showRoute, zoneSecs, showZones, te, rt.paintVer, rt.eraseMode])
 
   async function prepare() {
     const ok = await ensureProfile(MODULE)
@@ -485,7 +498,11 @@ export function SportCard() {
       ) : (
         <div className="workspace">
           <div className={'stage ' + format}>
-            <canvas ref={preview} className="preview" />
+            <canvas
+              ref={preview}
+              className={'preview' + (rt.eraseMode ? ' draggable erasing' : '')}
+              {...(rt.eraseMode ? { ...rt.handlers, onPointerCancel: rt.handlers.onPointerUp } : {})}
+            />
           </div>
 
           <div className="panel">
@@ -631,6 +648,8 @@ export function SportCard() {
             <Field label={t('common.color')}>
               <ColorRow value={accent} onChange={(c) => (setAccent(c), reset())} colors={ACCENTS} />
             </Field>
+
+            {!vid.isVideo && <AiTools rt={rt} module={MODULE} onChange={reset} />}
 
             <details className="more">
               <summary>{t('sport.more')}</summary>

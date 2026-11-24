@@ -25,3 +25,6 @@ dist-ssr
 
 # MediaPipe wasm copiato in build
 public/mediapipe
+
+# ONNX Runtime wasm copiato in build
+public/ort
