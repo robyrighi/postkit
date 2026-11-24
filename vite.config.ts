@@ -1,8 +1,9 @@
 import react from '@vitejs/plugin-react'
 import { createHash } from 'node:crypto'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
+import { FAQ, SEO, SEO_LANGS, SITE, type SeoLang } from './src/seo/data.ts'
 
 // Content Security Policy: solo il nostro sito, Supabase (statistiche) e il
 // modello IA di MediaPipe. Applicata solo alla build (in dev Vite usa script inline).
@@ -65,7 +66,68 @@ function precache(): Plugin {
 }
 
 // GitHub Pages pubblica su https://pizkit.com/ (dominio personalizzato, file public/CNAME)
+
+// Pagine per lingua (/it /de /fr /en) con titolo, descrizione, hreflang e FAQ per Google.
+// La radice pizkit.com resta l'app che sceglie la lingua del telefono (x-default).
+function seoPages(): Plugin {
+  const esc = (x: string) => x.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
+  const hreflang = [
+    ...SEO_LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE}/${l}/" />`),
+    `<link rel="alternate" hreflang="x-default" href="${SITE}/" />`,
+  ].join('\n    ')
+  const faqLd = (l: SeoLang) =>
+    `<script type="application/ld+json">${JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      inLanguage: l,
+      mainEntity: FAQ[l].map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+    })}</script>`
+  const page = (html: string, l: SeoLang, url: string) => {
+    const s = SEO[l]
+    const rep = (re: RegExp, val: string) => {
+      if (!re.test(html)) throw new Error('seoPages: non trovato ' + re)
+      html = html.replace(re, val)
+    }
+    rep(/<html lang="[^"]*">/, `<html lang="${s.htmlLang}">`)
+    rep(/<title>[^<]*<\/title>/, `<title>${esc(s.title)}</title>`)
+    rep(/<meta name="description" content="[^"]*" \/>/, `<meta name="description" content="${esc(s.description)}" />`)
+    rep(/<meta property="og:title" content="[^"]*" \/>/, `<meta property="og:title" content="${esc(s.ogTitle)}" />`)
+    rep(/<meta property="og:description" content="[^"]*" \/>/, `<meta property="og:description" content="${esc(s.ogDescription)}" />\n    <meta property="og:locale" content="${s.ogLocale}" />`)
+    rep(/<meta property="og:url" content="[^"]*" \/>/, `<meta property="og:url" content="${url}" />`)
+    rep(/<meta property="og:image:alt" content="[^"]*" \/>/, `<meta property="og:image:alt" content="${esc(s.ogAlt)}" />`)
+    rep(/<link rel="canonical" href="[^"]*" \/>/, `<link rel="canonical" href="${url}" />\n    ${hreflang}`)
+    rep(/<noscript>[\s\S]*?<\/noscript>/, `<noscript>\n      <h1>${esc(s.noscriptH1)}</h1>\n      <p>${esc(s.noscriptP)}</p>\n    </noscript>`)
+    html = html.replace('</head>', `  ${faqLd(l)}\n  </head>`)
+    return html
+  }
+  return {
+    name: 'pk-seo-pages',
+    apply: 'build',
+    closeBundle() {
+      const out = resolve(__dirname, 'dist')
+      const base = readFileSync(resolve(out, 'index.html'), 'utf8')
+      // radice: italiano + collegamenti alle altre lingue
+      writeFileSync(resolve(out, 'index.html'), page(base, 'it', `${SITE}/`))
+      for (const l of SEO_LANGS) {
+        mkdirSync(resolve(out, l), { recursive: true })
+        writeFileSync(resolve(out, l, 'index.html'), page(base, l, `${SITE}/${l}/`))
+      }
+      const alt = [...SEO_LANGS.map((l) => [l, `${SITE}/${l}/`]), ['x-default', `${SITE}/`]]
+        .map(([l, u]) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${u}"/>`)
+        .join('\n')
+      const today = new Date().toISOString().slice(0, 10)
+      const urls = [`${SITE}/`, ...SEO_LANGS.map((l) => `${SITE}/${l}/`)]
+        .map((u) => `  <url>\n    <loc>${u}</loc>\n    <lastmod>${today}</lastmod>\n${alt}\n  </url>`)
+        .join('\n')
+      writeFileSync(
+        resolve(out, 'sitemap.xml'),
+        `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls}\n</urlset>\n`,
+      )
+    },
+  }
+}
+
 export default defineConfig({
   base: '/',
-  plugins: [react(), csp(), precache()],
+  plugins: [react(), csp(), precache(), seoPages()],
 })

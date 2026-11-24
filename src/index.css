@@ -1577,3 +1577,41 @@ details.more[open] > :not(summary) {
   color: #fff;
   background: linear-gradient(135deg, #ff5a8a, #ff7a2f 55%, #ffb347);
 }
+
+/* Domande frequenti (chiuse a fisarmonica) */
+.faq {
+  max-width: 720px;
+  margin: 36px auto 0;
+}
+.faq h2 {
+  font-size: 20px;
+  margin: 0 0 12px;
+}
+.faq details {
+  border-bottom: 1px solid var(--line);
+  padding: 12px 2px;
+}
+.faq summary {
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq summary::after {
+  content: '+';
+  color: var(--accent, #ff7a2f);
+  font-weight: 800;
+}
+.faq details[open] summary::after {
+  content: '–';
+}
+.faq details p {
+  margin: 8px 0 2px;
+  color: var(--muted, #c9c2da);
+  line-height: 1.5;
+}

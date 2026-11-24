@@ -7,6 +7,9 @@ export { LANGS, LOCALES } from './strings'
 const STORE = 'pk_lang'
 
 function detect(): Lang {
+  // Pagine per lingua (/de/, /fr/…): la lingua dell'indirizzo ha la precedenza
+  const m = location.pathname.match(/^\/(it|de|fr|en)\//)
+  if (m && m[1] in DICTS) return m[1] as Lang
   try {
     const saved = localStorage.getItem(STORE)
     if (saved && saved in DICTS) return saved as Lang

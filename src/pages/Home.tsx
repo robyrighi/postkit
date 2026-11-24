@@ -2,6 +2,7 @@ import { InstallApp } from '../components/InstallApp'
 import { useI18n, type Key } from '../i18n'
 import { track } from '../lib/api'
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../lib/config'
+import { FAQ, SEO, type SeoLang } from '../seo/data'
 
 const B = import.meta.env.BASE_URL
 
@@ -41,6 +42,7 @@ const TOOLS: Tool[] = [
 
 export function Home() {
   const { t, lang } = useI18n()
+  const faqLang: SeoLang = lang
   return (
     <div className="home">
       <section className="hero">
@@ -106,6 +108,16 @@ export function Home() {
           <h3>{t('home.trust3.title')}</h3>
           <p>{t('home.trust3.text')}</p>
         </div>
+      </section>
+
+      <section className="faq">
+        <h2>{SEO[faqLang].faqTitle}</h2>
+        {FAQ[faqLang].map((f) => (
+          <details key={f.q} onToggle={(e) => (e.currentTarget as HTMLDetailsElement).open && track('home', 'faq', { q: f.q.slice(0, 40) })}>
+            <summary>{f.q}</summary>
+            <p>{f.a}</p>
+          </details>
+        ))}
       </section>
 
       <a
