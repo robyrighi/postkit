@@ -1521,3 +1521,26 @@ details.more[open] > :not(summary) {
   outline: 2px dashed #ff3c5a;
   outline-offset: 4px;
 }
+
+/* Novità */
+.modal.news h2 {
+  margin: 0 0 6px;
+}
+.news-list {
+  margin: 14px 0 18px;
+  padding-left: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+.news-list li {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  line-height: 1.35;
+}
+.modal.news {
+  max-height: 88vh;
+  overflow-y: auto;
+}

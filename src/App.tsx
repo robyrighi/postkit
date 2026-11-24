@@ -9,6 +9,7 @@ import { trackArrival } from './lib/channel'
 import { getProfile } from './lib/visitor'
 import { Home } from './pages/Home'
 import { Privacy } from './pages/Privacy'
+import { NewsModal } from './components/News'
 
 const SportCard = lazy(() => import('./modules/SportCard').then((m) => ({ default: m.SportCard })))
 const TextStudio = lazy(() => import('./modules/TextStudio').then((m) => ({ default: m.TextStudio })))
@@ -69,6 +70,7 @@ function LangSwitch() {
 }
 
 function Shell() {
+  const [showNews, setShowNews] = useState(false)
   const route = useRoute()
   const { t } = useI18n()
 
@@ -124,10 +126,21 @@ function Shell() {
         <Suspense fallback={<div className="module muted">{t('loading')}</div>}>{page}</Suspense>
       </main>
 
+      <NewsModal key={showNews ? 'f' : 'a'} forceOpen={showNews} onClose={() => setShowNews(false)} />
       <footer className="footer">
         <p>{t('footer.privacy')}</p>
         <p>
-          <a href="#/privacy">{t('footer.privacyLink')}</a> · {t('footer.made')} 🇨🇭
+          <a href="#/privacy">{t('footer.privacyLink')}</a> ·{' '}
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault()
+              setShowNews(true)
+            }}
+          >
+            {t('news.link')}
+          </a>{' '}
+          · {t('footer.made')} 🇨🇭
         </p>
       </footer>
     </div>
