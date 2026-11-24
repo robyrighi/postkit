@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ColorRow, Field, FilePick, FilterChips, Segmented, Slider } from '../components/Controls'
 import { ExportPanel } from '../components/ExportPanel'
+import { useVideo, VideoTrim } from '../components/VideoControls'
 import { useEnsureProfile } from '../components/ProfileGate'
 import { useI18n, type Key } from '../i18n'
 import { track } from '../lib/api'
@@ -80,6 +81,7 @@ export function SportCard() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const preview = useRef<HTMLCanvasElement>(null)
+  const vid = useVideo((c) => setImg(c))
   const ensureProfile = useEnsureProfile()
   const sp = SPORTS.find((s) => s.id === sport)!
   const dec = (s: string) => (lang === 'en' ? s : s.replace('.', ','))
@@ -114,6 +116,22 @@ export function SportCard() {
 
   async function onFile(f: File) {
     setError('')
+    if (vid.isVideoFile(f)) {
+      try {
+        const poster = await vid.open(f)
+        setImg(poster)
+        setFilter('none')
+        setFraming(defaultFraming)
+        setIsSample(false)
+        reset()
+        track(MODULE, 'upload', { video: true, mb: Math.round(f.size / 1e6) })
+      } catch (e) {
+        setError((e as Error).message === 'unsupported' ? t('video.unsupported') : t('common.openError'))
+        track(MODULE, 'video_error', { stage: 'open', msg: String((e as Error).message).slice(0, 80) })
+      }
+      return
+    }
+    vid.clear()
     try {
       setImg(await loadImage(f))
       setFraming(defaultFraming)
@@ -194,12 +212,13 @@ export function SportCard() {
     return c
   }, [img, format, framing, filter])
 
-  function compose(): HTMLCanvasElement | null {
+  /** withBase=false: solo grafica su sfondo trasparente (livello da sovrapporre al video) */
+  function compose(withBase = true): HTMLCanvasElement | null {
     if (!base) return null
     const { w, h } = FORMATS[format]
     const c = makeCanvas(w, h)
     const ctx = ctx2d(c)
-    ctx.drawImage(base, 0, 0)
+    if (withBase) ctx.drawImage(base, 0, 0)
     const m = w * 0.07
     let badgeBottom = h
     const label = t(`sport.${sport}` as Key).toUpperCase()
@@ -428,12 +447,25 @@ export function SportCard() {
     if (!ok) return
     setBusy(true)
     try {
+      if (vid.isVideo) {
+        const ov = compose(false)
+        if (!ov) return
+        const { w, h } = FORMATS[format]
+        const file = await vid.render({ width: w, height: h, framing, overlay: ov, name: `pizkit-sport-${stamp()}.mp4` })
+        setFiles([file])
+        track(MODULE, 'export', { video: true, format, layout, sport, len: Math.round(vid.len), mb: Math.round(file.size / 1e5) / 10 })
+        return
+      }
       const c = compose()
       if (!c) return
       setFiles([await canvasToFile(c, `pizkit-sport-${stamp()}.jpg`)])
       track(MODULE, 'export', { format, layout, sport, filter, km: num(km), time, sec: tt })
-    } catch {
-      setError(t('common.genericError'))
+    } catch (e) {
+      const canceled = /cancel/i.test(String((e as Error)?.name) + String((e as Error)?.message))
+      if (!canceled) {
+        setError(vid.isVideo ? t('video.error') : t('common.genericError'))
+        if (vid.isVideo) track(MODULE, 'video_error', { stage: 'render', msg: String((e as Error)?.message).slice(0, 80) })
+      }
     } finally {
       setBusy(false)
     }
@@ -449,7 +481,7 @@ export function SportCard() {
       </header>
 
       {!img ? (
-        <FilePick onFile={onFile} label={t('sport.pick')} sample="sport.jpg" />
+        <FilePick onFile={onFile} label={t('sport.pick')} sample="sport.jpg" video />
       ) : (
         <div className="workspace">
           <div className={'stage ' + format}>
@@ -460,9 +492,10 @@ export function SportCard() {
             {isSample && (
               <div className="demo-note">
                 <span>👀 {t('sport.demoNote')}</span>
-                <FilePick onFile={onFile} label={t('sport.useOwn')} compact />
+                <FilePick onFile={onFile} label={t('sport.useOwn')} compact video />
               </div>
             )}
+            <VideoTrim v={vid} onChange={reset} />
             <Field label={t('sport.step1')}>
               <div className="chips">
                 {SPORTS.map((s) => (
@@ -621,9 +654,11 @@ export function SportCard() {
               />
               <Slider label={t('common.moveH')} value={framing.x} min={-1} max={1} onChange={(x) => (setFraming({ ...framing, x }), reset())} />
               <Slider label={t('common.moveV')} value={framing.y} min={-1} max={1} onChange={(y) => (setFraming({ ...framing, y }), reset())} />
-              <Field label={t('common.filter')}>
-                <FilterChips value={filter} onChange={(f) => (setFilter(f), reset(), track(MODULE, 'filter', { f }))} />
-              </Field>
+              {!vid.isVideo && (
+                <Field label={t('common.filter')}>
+                  <FilterChips value={filter} onChange={(f) => (setFilter(f), reset(), track(MODULE, 'filter', { f }))} />
+                </Field>
+              )}
               <label className="toggle">
                 <input type="checkbox" checked={badge} onChange={(e) => (setBadge(e.target.checked), reset())} />
                 <span className="toggle-ui" />
@@ -632,10 +667,23 @@ export function SportCard() {
             </details>
 
             <div className="row wrap actions">
-              <button className="btn primary big" onClick={prepare} disabled={busy}>
-                {busy ? t('common.preparing') : t('sport.create')}
-              </button>
-              <FilePick onFile={onFile} label={t('common.changePhoto')} compact />
+              {vid.progress !== null ? (
+                <>
+                  <button className="btn primary big" disabled>
+                    {t('video.creating', { p: Math.round(vid.progress * 100) })}
+                  </button>
+                  <button className="btn ghost" onClick={vid.cancel}>
+                    {t('video.cancel')}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="btn primary big" onClick={prepare} disabled={busy}>
+                    {busy ? t('common.preparing') : vid.isVideo ? t('video.create') : t('sport.create')}
+                  </button>
+                  <FilePick onFile={onFile} label={t('common.changePhoto')} compact video />
+                </>
+              )}
             </div>
             {error && <p className="error">{error}</p>}
           </div>

@@ -25,6 +25,8 @@
     "fit-file-parser": "^6.2.10",
     "heic-to": "^1.6.7",
     "jszip": "^3.10.2",
+    "mediabunny": "^1.66.3",
+    "onnxruntime-web": "^1.31.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

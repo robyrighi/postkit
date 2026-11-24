@@ -778,7 +778,8 @@ details.more[open] > :not(summary) {
   overflow-x: auto;
   padding-bottom: 6px;
 }
-.thumbs img {
+.thumbs img,
+.thumbs video {
   height: 220px;
   border-radius: 10px;
   flex: none;
@@ -1481,4 +1482,17 @@ details.more[open] > :not(summary) {
 .zones-grid input {
   margin-top: 4px;
   width: 100%;
+}
+
+/* Video */
+.video-trim {
+  border: 1px solid rgba(255, 122, 47, 0.45);
+  background: rgba(255, 122, 47, 0.08);
+  border-radius: 14px;
+  padding: 12px 14px 4px;
+  margin-bottom: 16px;
+}
+.video-badge {
+  margin: 0 0 6px;
+  font-weight: 800;
 }

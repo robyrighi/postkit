@@ -67,9 +67,13 @@ export function ExportPanel({ module, files, zipName, onClose }: Props) {
         </button>
       </div>
       <div className={'thumbs' + (many ? ' many' : '')}>
-        {urls.map((u, i) => (
-          <img key={u} src={u} alt={`${t('exp.preview')} ${i + 1}`} />
-        ))}
+        {urls.map((u, i) =>
+          files[i]?.type.startsWith('video/') ? (
+            <video key={u} src={u} controls playsInline muted loop autoPlay />
+          ) : (
+            <img key={u} src={u} alt={`${t('exp.preview')} ${i + 1}`} />
+          ),
+        )}
       </div>
       <div className="row wrap">
         <button className="btn primary big" onClick={() => save()}>

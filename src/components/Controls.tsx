@@ -66,11 +66,13 @@ export function FilePick({
   label,
   compact = false,
   sample,
+  video = false,
 }: {
   onFile: (f: File) => void
   label?: string
   compact?: boolean
   sample?: string // foto d'esempio (percorso in public/samples)
+  video?: boolean // accetta anche video
 }) {
   const ref = useRef<HTMLInputElement>(null)
   const { t } = useI18n()
@@ -82,7 +84,7 @@ export function FilePick({
       onDrop={(e) => {
         e.preventDefault()
         const f = e.dataTransfer.files?.[0]
-        if (f && (f.type.startsWith('image/') || /\.(heic|heif)$/i.test(f.name))) onFile(f)
+        if (f && (f.type.startsWith('image/') || /\.(heic|heif)$/i.test(f.name) || (video && f.type.startsWith('video/')))) onFile(f)
       }}
       role="button"
       tabIndex={0}
@@ -91,7 +93,7 @@ export function FilePick({
       <input
         ref={ref}
         type="file"
-        accept="image/*,.heic,.heif"
+        accept={video ? 'image/*,.heic,.heif,video/*,.mov,.mp4,.m4v' : 'image/*,.heic,.heif'}
         hidden
         onChange={(e) => {
           const f = e.target.files?.[0]
@@ -102,6 +104,7 @@ export function FilePick({
       <span className="drop-icon">🖼️</span>
       <span>{label ?? t('common.pickPhoto')}</span>
       {!compact && <span className="muted small">{t('common.pickHint')}</span>}
+      {!compact && video && <span className="muted small">🎬 {t('video.pickHint')}</span>}
       {!compact && sample && (
         <button
           type="button"
