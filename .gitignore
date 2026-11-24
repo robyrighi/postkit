@@ -28,3 +28,4 @@ public/mediapipe
 
 # ONNX Runtime wasm copiato in build
 public/ort
+public/ocr

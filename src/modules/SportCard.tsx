@@ -23,6 +23,7 @@ import {
 import { drawBadge, drawOverlay, loadAllFonts, pickContrast } from '../lib/templates'
 import { fmtDuration, humanDuration, parseDuration, parseTimeSmart } from '../lib/time'
 import { drawRoute, readActivityFile } from '../lib/activityFile'
+import type { OcrProgress } from '../lib/ocr'
 
 const MODULE = 'sport'
 
@@ -76,6 +77,8 @@ export function SportCard() {
   const [route, setRoute] = useState<[number, number][] | null>(null)
   const [showRoute, setShowRoute] = useState(true)
   const [importMsg, setImportMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const shotInput = useRef<HTMLInputElement>(null)
+  const [ocr, setOcr] = useState<OcrProgress | null>(null)
   const actInput = useRef<HTMLInputElement>(null)
   const [fontsOk, setFontsOk] = useState(false)
   const [files, setFiles] = useState<File[] | null>(null)
@@ -178,6 +181,44 @@ export function SportCard() {
       console.warn(e)
       setImportMsg({ ok: false, text: t('sport.importError') })
       track(MODULE, 'activity_import_error', { type: f.name.split('.').pop()?.toLowerCase() })
+    }
+  }
+
+  /** Legge i dati da uno o più screenshot (Garmin, Strava…) e compila i campi trovati. */
+  async function onScreenshots(files: File[]) {
+    if (!files.length) return
+    setImportMsg(null)
+    const t0 = performance.now()
+    try {
+      const { readScreenshots } = await import('../lib/ocr')
+      const s = await readScreenshots(files.slice(0, 6), setOcr)
+      const found: string[] = []
+      if (s.sport) setSport(s.sport)
+      if (s.distanceKm) (setKm(dec(s.distanceKm.toFixed(2).replace(/\.?0+$/, ''))), found.push(t('sport.distance')))
+      else if (s.sport === 'spin') setKm('')
+      if (s.durationSec) (setTime(fmtDuration(s.durationSec)), found.push(t('sport.time')))
+      if (s.elevGain) (setElev(String(s.elevGain)), found.push(t('sport.elev')))
+      if (s.avgHr) (setHr(String(s.avgHr)), found.push(t('sport.hr')))
+      if (s.kcal) (setKcal(String(s.kcal)), found.push(t('sport.kcal')))
+      if (s.avgPower) (setPower(String(s.avgPower)), found.push(t('sport.power')))
+      if (s.te) setTe(dec(s.te.toFixed(1)))
+      if (s.zones && s.zones.some((z) => z)) {
+        setZones(s.zones.map((z) => (z ? fmtDuration(z) : '')))
+        setShowZones(true)
+        found.push(t('sport.zonesLbl'))
+      }
+      reset()
+      setImportMsg(
+        found.length
+          ? { ok: true, text: t('ocr.ok', { list: found.map((x) => x.replace(/\s*\(.*\)/, '')).join(', ') }) }
+          : { ok: false, text: t('ocr.none') },
+      )
+      track(MODULE, 'ocr', { n: files.length, found: found.length, ms: Math.round(performance.now() - t0), sport: s.sport })
+    } catch (e) {
+      setImportMsg({ ok: false, text: t('ocr.error') })
+      track(MODULE, 'ocr_error', { msg: String((e as Error)?.message).slice(0, 80) })
+    } finally {
+      setOcr(null)
     }
   }
 
@@ -544,11 +585,39 @@ export function SportCard() {
                   e.target.value = ''
                 }}
               />
-              <button type="button" className="btn ghost import-btn" onClick={() => actInput.current?.click()}>
-                {t('sport.import')}
-              </button>
+              <input
+                ref={shotInput}
+                type="file"
+                accept="image/*,.heic,.heif"
+                multiple
+                hidden
+                onChange={(e) => {
+                  const fs = Array.from(e.target.files ?? [])
+                  e.target.value = ''
+                  onScreenshots(fs)
+                }}
+              />
+              <div className="row wrap">
+                <button type="button" className="btn ghost import-btn" disabled={!!ocr} onClick={() => shotInput.current?.click()}>
+                  📷 {t('ocr.btn')}
+                </button>
+                <button type="button" className="btn ghost import-btn" onClick={() => actInput.current?.click()}>
+                  {t('sport.import')}
+                </button>
+              </div>
+              {ocr && (
+                <p className="muted small">
+                  ⏳ {ocr.phase === 'load' ? t('ocr.loading') : t('ocr.reading', { n: Math.min(ocr.done + 1, ocr.total), tot: ocr.total })}
+                </p>
+              )}
               {importMsg && <p className={importMsg.ok ? 'ok small' : 'error small'}>{importMsg.text}</p>}
-              {!importMsg && <p className="muted small">{t('sport.importHint')}</p>}
+              {!importMsg && !ocr && (
+                <p className="muted small">
+                  📷 {t('ocr.hint')}
+                  <br />
+                  {t('sport.importHint')}
+                </p>
+              )}
               {route && (
                 <label className="toggle">
                   <input type="checkbox" checked={showRoute} onChange={(e) => (setShowRoute(e.target.checked), reset())} />

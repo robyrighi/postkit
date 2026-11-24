@@ -11,6 +11,15 @@ interface Release {
 }
 export const RELEASES: Release[] = [
   {
+    id: '2026-11-24b',
+    items: {
+      it: ['📷 Leggi da screenshot: carica gli screenshot di Garmin o Strava e la card sport si compila da sola (tempo, frequenza, calorie, zone)'],
+      en: ['📷 Read from screenshot: load your Garmin or Strava screenshots and the sport card fills itself in (time, heart rate, calories, zones)'],
+      de: ['📷 Aus Screenshot lesen: Lade Screenshots von Garmin oder Strava und die Sport-Card füllt sich selbst aus (Zeit, Herzfrequenz, Kalorien, Zonen)'],
+      fr: ['📷 Lire une capture d’écran : charge tes captures Garmin ou Strava et la carte sport se remplit toute seule (temps, fréquence, calories, zones)'],
+    },
+  },
+  {
     id: '2026-11-24',
     items: {
       it: [
@@ -62,9 +71,17 @@ export function NewsModal({ forceOpen, onClose }: { forceOpen?: boolean; onClose
   const { t, lang } = useI18n()
   const latest = RELEASES[0]
   const [open, setOpen] = useState(false)
+  const [items, setItems] = useState<string[]>([])
+  const listFor = (seen: string | null) => {
+    const idx = RELEASES.findIndex((r) => r.id === seen)
+    // tutte le novità non ancora viste (al massimo le ultime 2 versioni)
+    const unseen = RELEASES.slice(0, idx === -1 ? 2 : Math.max(1, idx))
+    return unseen.flatMap((r) => r.items[lang] ?? r.items.it)
+  }
 
   useEffect(() => {
     if (forceOpen) {
+      setItems(listFor(null))
       setOpen(true)
       return
     }
@@ -74,12 +91,14 @@ export function NewsModal({ forceOpen, onClose }: { forceOpen?: boolean; onClose
       localStorage.setItem(KEY, latest.id)
       // chi arriva per la prima volta vede l'app così com'è, senza elenco di novità
       if (returning && seen !== latest.id) {
+        setItems(listFor(seen))
         setOpen(true)
         track('app', 'news_shown', { id: latest.id })
       }
     } catch {
       /* storage non disponibile */
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forceOpen, latest.id])
 
   if (!open) return null
@@ -93,7 +112,7 @@ export function NewsModal({ forceOpen, onClose }: { forceOpen?: boolean; onClose
         <h2 id="news-title">🎉 {t('news.title')}</h2>
         <p className="muted small">{t('news.lead')}</p>
         <ul className="news-list">
-          {(latest.items[lang] ?? latest.items.it).map((it) => (
+          {items.map((it) => (
             <li key={it}>{it}</li>
           ))}
         </ul>

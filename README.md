@@ -89,3 +89,4 @@ MIT
 - [Mediabunny](https://github.com/Vanilagy/mediabunny) (MPL-2.0): lettura/scrittura video MP4 nel browser.
 - [ONNX Runtime Web](https://github.com/microsoft/onnxruntime) (MIT): esecuzione del modello della gomma magica.
 - [MI-GAN](https://github.com/Picsart-AI-Research/MI-GAN) (MIT, Picsart AI Research): modello di inpainting, convertito in ONNX (`public/models/migan-512.onnx`, licenza in `public/models/MI-GAN-LICENSE.txt`).
+- [Tesseract.js](https://github.com/naptha/tesseract.js) (Apache-2.0) con dati lingua inglese: lettura dei dati dagli screenshot, sul dispositivo.

@@ -26,3 +26,13 @@ for (const f of ['ort-wasm-simd-threaded.mjs', 'ort-wasm-simd-threaded.wasm']) {
   cpSync(join(ortSrc, f), join(ortDst, f))
 }
 console.log('ONNX Runtime wasm copiato in public/ort')
+
+// Tesseract.js (lettura degli screenshot): worker, motore e lingua serviti dal nostro sito
+const ocrDst = join(root, 'public', 'ocr')
+mkdirSync(join(ocrDst, 'lang'), { recursive: true })
+cpSync(join(root, 'node_modules', 'tesseract.js', 'dist', 'worker.min.js'), join(ocrDst, 'worker.min.js'))
+for (const f of ['tesseract-core-lstm.wasm.js', 'tesseract-core-simd-lstm.wasm.js', 'tesseract-core-relaxedsimd-lstm.wasm.js']) {
+  cpSync(join(root, 'node_modules', 'tesseract.js-core', f), join(ocrDst, f))
+}
+cpSync(join(root, 'node_modules', '@tesseract.js-data', 'eng', '4.0.0_best_int', 'eng.traineddata.gz'), join(ocrDst, 'lang', 'eng.traineddata.gz'))
+console.log('Tesseract copiato in public/ocr')
