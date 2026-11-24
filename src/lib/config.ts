@@ -8,6 +8,8 @@ export const SUPABASE_KEY =
 export const APP_NAME = 'PizKit'
 // Contatto del sito (pagina privacy e area admin)
 export const CONTACT_EMAIL = 'robyrighi@outlook.com'
+export const INSTAGRAM_URL = 'https://www.instagram.com/pizkit.ch/'
+export const INSTAGRAM_HANDLE = '@pizkit.ch'
 // Titolare del trattamento dei dati (nLPD)
 export const OWNER = 'Roby Righi, Cama (GR), Svizzera'
 

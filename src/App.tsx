@@ -10,6 +10,7 @@ import { getProfile } from './lib/visitor'
 import { Home } from './pages/Home'
 import { Privacy } from './pages/Privacy'
 import { NewsModal } from './components/News'
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from './lib/config'
 
 const SportCard = lazy(() => import('./modules/SportCard').then((m) => ({ default: m.SportCard })))
 const TextStudio = lazy(() => import('./modules/TextStudio').then((m) => ({ default: m.TextStudio })))
@@ -139,6 +140,10 @@ function Shell() {
             }}
           >
             {t('news.link')}
+          </a>{' '}
+          ·{' '}
+          <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" onClick={() => track('app', 'instagram')}>
+            Instagram {INSTAGRAM_HANDLE}
           </a>{' '}
           · {t('footer.made')} 🇨🇭
         </p>
