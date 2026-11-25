@@ -143,16 +143,16 @@ export async function parseFit(buf: ArrayBuffer): Promise<ActivityData> {
   const start = (s?.start_time ?? records[0]?.timestamp) as Date | string | undefined
   // Tempo nelle zone cardiache: messaggio "time_in_zone" riferito alla sessione, altrimenti il campo della sessione
   const tiz = ((data as unknown as Record<string, unknown>).time_in_zone ?? []) as Record<string, unknown>[]
-  const tzMsg =
-    tiz.find((m) => m.reference_mesg === 'session' || m.reference_mesg === 18) ?? tiz[tiz.length - 1]
-  const raw = (tzMsg?.time_in_hr_zone ?? (s as unknown as Record<string, unknown> | undefined)?.time_in_hr_zone) as number[] | number | undefined
+  const tzMsg = tiz.find((m) => m.reference_mesg === 'session' || m.reference_mesg === 18) ?? tiz[tiz.length - 1]
+  const raw = (tzMsg?.time_in_hr_zone ?? (s as unknown as Record<string, unknown> | undefined)?.time_in_hr_zone) as
+    number[] | number | undefined
   let hrZones: number[] | undefined
   if (Array.isArray(raw) && raw.length >= 5) {
     // Garmin: indice 0 = sotto la Z1, poi Z1..Z5 (6 valori); con 5 valori sono già Z1..Z5
     const z = (raw.length >= 6 ? raw.slice(1, 6) : raw.slice(0, 5)).map((v) => (typeof v === 'number' && isFinite(v) ? v : 0))
     if (z.some((v) => v > 0)) hrZones = z
   }
-  const teRaw = ((s as unknown as Record<string, unknown> | undefined)?.total_training_effect) as number | undefined
+  const teRaw = (s as unknown as Record<string, unknown> | undefined)?.total_training_effect as number | undefined
   const teAerobic = typeof teRaw === 'number' && teRaw > 0 && teRaw <= 5 ? Math.round(teRaw * 10) / 10 : undefined
   return {
     hrZones,
@@ -196,31 +196,44 @@ async function readActivityBytes(name: string, bytes: Uint8Array, type = ''): Pr
   throw new Error('Formato non supportato')
 }
 
-/** Disegna il tracciato dentro un riquadro (proiezione semplice, corretta per la latitudine). */
+/**
+ * Disegna il tracciato dentro un riquadro (proiezione semplice, corretta per la latitudine).
+ * Accetta un tracciato unico (da GPX/FIT) o più tratti (da screenshot della mappa).
+ */
 export function drawRoute(
   ctx: CanvasRenderingContext2D,
-  points: [number, number][],
+  route: [number, number][] | [number, number][][],
   box: { x: number; y: number; w: number; h: number },
   color: string,
   width: number,
 ) {
-  const pts = simplify(points)
-  if (pts.length < 2) return
-  const midLat = pts.reduce((a, p) => a + p[0], 0) / pts.length
+  const multi = Array.isArray(route[0]?.[0])
+  const lines = (multi ? (route as [number, number][][]) : [route as [number, number][]])
+    .map((l) => simplify(l))
+    .filter((l) => l.length >= 2)
+  if (!lines.length) return
+  const all = lines.flat()
+  const midLat = all.reduce((a, p) => a + p[0], 0) / all.length
   const k = Math.cos((midLat * Math.PI) / 180)
-  const xy = pts.map(([lat, lon]) => [lon * k, -lat] as [number, number])
-  const xs = xy.map((p) => p[0])
-  const ys = xy.map((p) => p[1])
-  const minX = Math.min(...xs)
-  const maxX = Math.max(...xs)
-  const minY = Math.min(...ys)
-  const maxY = Math.max(...ys)
+  let minX = Infinity,
+    maxX = -Infinity,
+    minY = Infinity,
+    maxY = -Infinity
+  for (const [lat, lon] of all) {
+    const x = lon * k,
+      y = -lat
+    if (x < minX) minX = x
+    if (x > maxX) maxX = x
+    if (y < minY) minY = y
+    if (y > maxY) maxY = y
+  }
   const sw = maxX - minX || 1e-9
   const sh = maxY - minY || 1e-9
   const sc = Math.min(box.w / sw, box.h / sh)
   const ox = box.x + (box.w - sw * sc) / 2
   const oy = box.y + (box.h - sh * sc) / 2
-  const P = xy.map(([x, y]) => [ox + (x - minX) * sc, oy + (y - minY) * sc] as [number, number])
+  const Ps = lines.map((l) => l.map(([lat, lon]) => [ox + (lon * k - minX) * sc, oy + (-lat - minY) * sc] as [number, number]))
+  const P = Ps[0]
 
   ctx.save()
   ctx.lineJoin = 'round'
@@ -229,7 +242,7 @@ export function drawRoute(
   ctx.strokeStyle = 'rgba(0,0,0,0.45)'
   ctx.lineWidth = width * 2.4
   ctx.beginPath()
-  P.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)))
+  for (const L of Ps) L.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)))
   ctx.stroke()
   ctx.shadowColor = color
   ctx.shadowBlur = width * 2
@@ -247,7 +260,10 @@ export function drawRoute(
     ctx.strokeStyle = 'rgba(0,0,0,0.6)'
     ctx.stroke()
   }
-  dot(P[0], '#ffffff')
-  dot(P[P.length - 1], color)
+  // partenza e arrivo solo se il tracciato è uno solo (da file): dallo screenshot non li conosciamo
+  if (!multi) {
+    dot(P[0], '#ffffff')
+    dot(P[P.length - 1], color)
+  }
   ctx.restore()
 }

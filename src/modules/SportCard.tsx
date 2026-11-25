@@ -23,6 +23,7 @@ import {
 import { drawBadge, drawOverlay, loadAllFonts, pickContrast } from '../lib/templates'
 import { fmtDuration, humanDuration, parseDuration, parseTimeSmart } from '../lib/time'
 import { drawRoute, readActivityFile } from '../lib/activityFile'
+import { RouteShotPicker } from '../components/RouteShotPicker'
 import type { OcrProgress } from '../lib/ocr'
 
 // iOS rende grigi i .fit/.gpx se il campo file filtra per estensione: lì niente filtro
@@ -76,7 +77,9 @@ export function SportCard() {
   const [zones, setZones] = useState<string[]>(['', '', '', '', ''])
   const [te, setTe] = useState('')
   const [showZones, setShowZones] = useState(true)
-  const [route, setRoute] = useState<[number, number][] | null>(null)
+  const [route, setRoute] = useState<[number, number][] | [number, number][][] | null>(null)
+  const [routeShot, setRouteShot] = useState<File | null>(null)
+  const routeShotInput = useRef<HTMLInputElement>(null)
   const [showRoute, setShowRoute] = useState(true)
   const [importMsg, setImportMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const shotInput = useRef<HTMLInputElement>(null)
@@ -496,7 +499,25 @@ export function SportCard() {
     ctx2d(p).drawImage(c, 0, 0)
     rt.drawPaintPreview(ctx2d(p))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [base, layout, accent, title, date, stats, badge, fontsOk, sport, t, route, showRoute, zoneSecs, showZones, te, rt.paintVer, rt.eraseMode])
+  }, [
+    base,
+    layout,
+    accent,
+    title,
+    date,
+    stats,
+    badge,
+    fontsOk,
+    sport,
+    t,
+    route,
+    showRoute,
+    zoneSecs,
+    showZones,
+    te,
+    rt.paintVer,
+    rt.eraseMode,
+  ])
 
   async function prepare() {
     const ok = await ensureProfile(MODULE)
@@ -509,7 +530,14 @@ export function SportCard() {
         const { w, h } = FORMATS[format]
         const file = await vid.render({ width: w, height: h, framing, overlay: ov, name: `pizkit-sport-${stamp()}.mp4` })
         setFiles([file])
-        track(MODULE, 'export', { video: true, format, layout, sport, len: Math.round(vid.len), mb: Math.round(file.size / 1e5) / 10 })
+        track(MODULE, 'export', {
+          video: true,
+          format,
+          layout,
+          sport,
+          len: Math.round(vid.len),
+          mb: Math.round(file.size / 1e5) / 10,
+        })
         return
       }
       const c = compose()
@@ -599,17 +627,57 @@ export function SportCard() {
                   onScreenshots(fs)
                 }}
               />
+              <input
+                ref={routeShotInput}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  e.target.value = ''
+                  if (f) {
+                    setRouteShot(f)
+                    track(MODULE, 'route_shot_open')
+                  }
+                }}
+              />
+              {routeShot && (
+                <RouteShotPicker
+                  file={routeShot}
+                  onDone={(segs) => {
+                    setRouteShot(null)
+                    if (!segs) return track(MODULE, 'route_shot_cancel')
+                    // pixel dello screenshot → coordinate "finte" (y verso l'alto) per drawRoute
+                    setRoute(segs.map((sg) => sg.map(([x, y]) => [-y * 1e-5, x * 1e-5] as [number, number])))
+                    setShowRoute(true)
+                    setImportMsg({ ok: true, text: t('routeShot.ok') })
+                    reset()
+                    track(MODULE, 'route_shot_use', { segs: segs.length })
+                  }}
+                />
+              )}
               <div className="row wrap">
-                <button type="button" className="btn ghost import-btn" disabled={!!ocr} onClick={() => shotInput.current?.click()}>
+                <button
+                  type="button"
+                  className="btn ghost import-btn"
+                  disabled={!!ocr}
+                  onClick={() => shotInput.current?.click()}
+                >
                   📷 {t('ocr.btn')}
                 </button>
                 <button type="button" className="btn ghost import-btn" onClick={() => actInput.current?.click()}>
                   {t('sport.import')}
                 </button>
+                <button type="button" className="btn ghost import-btn" onClick={() => routeShotInput.current?.click()}>
+                  {t('routeShot.btn')}
+                </button>
               </div>
               {ocr && (
                 <p className="muted small">
-                  ⏳ {ocr.phase === 'load' ? t('ocr.loading') : t('ocr.reading', { n: Math.min(ocr.done + 1, ocr.total), tot: ocr.total })}
+                  ⏳{' '}
+                  {ocr.phase === 'load'
+                    ? t('ocr.loading')
+                    : t('ocr.reading', { n: Math.min(ocr.done + 1, ocr.total), tot: ocr.total })}
                 </p>
               )}
               {importMsg && <p className={importMsg.ok ? 'ok small' : 'error small'}>{importMsg.text}</p>}
@@ -630,7 +698,12 @@ export function SportCard() {
               <div className="grid2">
                 <label>
                   {t('sport.distance')}
-                  <input inputMode="decimal" value={km} onChange={(e) => (setKm(e.target.value), reset())} placeholder={t('sport.distPh')} />
+                  <input
+                    inputMode="decimal"
+                    value={km}
+                    onChange={(e) => (setKm(e.target.value), reset())}
+                    placeholder={t('sport.distPh')}
+                  />
                 </label>
                 <label>
                   {t('sport.time')}
@@ -645,22 +718,44 @@ export function SportCard() {
                 </label>
                 <label>
                   {t('sport.elev')}
-                  <input inputMode="numeric" value={elev} onChange={(e) => (setElev(e.target.value), reset())} placeholder={t('sport.optional')} />
+                  <input
+                    inputMode="numeric"
+                    value={elev}
+                    onChange={(e) => (setElev(e.target.value), reset())}
+                    placeholder={t('sport.optional')}
+                  />
                 </label>
                 <label>
                   {t('sport.hr')}
-                  <input inputMode="numeric" value={hr} onChange={(e) => (setHr(e.target.value), reset())} placeholder={t('sport.optional')} />
+                  <input
+                    inputMode="numeric"
+                    value={hr}
+                    onChange={(e) => (setHr(e.target.value), reset())}
+                    placeholder={t('sport.optional')}
+                  />
                 </label>
                 <label>
                   {t('sport.power')}
-                  <input inputMode="numeric" value={power} onChange={(e) => (setPower(e.target.value), reset())} placeholder={t('sport.optional')} />
+                  <input
+                    inputMode="numeric"
+                    value={power}
+                    onChange={(e) => (setPower(e.target.value), reset())}
+                    placeholder={t('sport.optional')}
+                  />
                 </label>
                 <label>
                   {t('sport.kcal')}
-                  <input inputMode="numeric" value={kcal} onChange={(e) => (setKcal(e.target.value), reset())} placeholder={t('sport.optional')} />
+                  <input
+                    inputMode="numeric"
+                    value={kcal}
+                    onChange={(e) => (setKcal(e.target.value), reset())}
+                    placeholder={t('sport.optional')}
+                  />
                 </label>
               </div>
-              <p className="muted small">{sport === 'spin' ? t('sport.hintSpin') : sp.pace ? t('sport.hintPace') : t('sport.hintSpeed')}</p>
+              <p className="muted small">
+                {sport === 'spin' ? t('sport.hintSpin') : sp.pace ? t('sport.hintPace') : t('sport.hintSpeed')}
+              </p>
 
               <details className="zones-box" open={zones.some((z) => z.trim() !== '')}>
                 <summary>❤️ {t('sport.zones')}</summary>
@@ -742,8 +837,20 @@ export function SportCard() {
                 max={2.5}
                 onChange={(zoom) => (setFraming({ ...framing, zoom }), reset())}
               />
-              <Slider label={t('common.moveH')} value={framing.x} min={-1} max={1} onChange={(x) => (setFraming({ ...framing, x }), reset())} />
-              <Slider label={t('common.moveV')} value={framing.y} min={-1} max={1} onChange={(y) => (setFraming({ ...framing, y }), reset())} />
+              <Slider
+                label={t('common.moveH')}
+                value={framing.x}
+                min={-1}
+                max={1}
+                onChange={(x) => (setFraming({ ...framing, x }), reset())}
+              />
+              <Slider
+                label={t('common.moveV')}
+                value={framing.y}
+                min={-1}
+                max={1}
+                onChange={(y) => (setFraming({ ...framing, y }), reset())}
+              />
               {!vid.isVideo && (
                 <Field label={t('common.filter')}>
                   <FilterChips value={filter} onChange={(f) => (setFilter(f), reset(), track(MODULE, 'filter', { f }))} />

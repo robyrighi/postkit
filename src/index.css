@@ -1625,3 +1625,20 @@ details.more[open] > :not(summary) {
   opacity: 0;
   pointer-events: none;
 }
+
+/* Tracciato da screenshot */
+.route-shot {
+  max-width: 520px;
+}
+.route-shot-view {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0;
+}
+.route-shot-view canvas {
+  max-width: 100%;
+  max-height: 62vh;
+  border-radius: 12px;
+  touch-action: manipulation;
+  cursor: crosshair;
+}

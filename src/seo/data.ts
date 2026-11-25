@@ -96,7 +96,7 @@ export const FAQ: Record<SeoLang, { q: string; a: string }[]> = {
     },
     {
       q: 'Quali dati posso mettere sulla foto?',
-      a: 'Tempo, distanza, ritmo o velocità, dislivello, frequenza cardiaca media, calorie, zone cardio Z1–Z5, Training Effect e il percorso (da GPX/FIT). Sport: corsa, trail, bici, MTB, sci di fondo, escursione, spinning.',
+      a: 'Tempo, distanza, ritmo o velocità, dislivello, frequenza cardiaca media, calorie, zone cardio Z1–Z5, Training Effect e il percorso (da GPX/FIT o da uno screenshot della mappa). Sport: corsa, trail, bici, MTB, sci di fondo, escursione, spinning.',
     },
     {
       q: 'Funziona anche con i video?',
@@ -138,7 +138,7 @@ export const FAQ: Record<SeoLang, { q: string; a: string }[]> = {
     },
     {
       q: 'Welche Daten kann ich aufs Foto bringen?',
-      a: 'Zeit, Distanz, Pace oder Tempo, Höhenmeter, durchschnittliche Herzfrequenz, Kalorien, Herzfrequenzzonen Z1–Z5, Training Effect und die Strecke (aus GPX/FIT). Sportarten: Laufen, Trail, Velo, MTB, Langlauf, Wandern, Spinning.',
+      a: 'Zeit, Distanz, Pace oder Tempo, Höhenmeter, durchschnittliche Herzfrequenz, Kalorien, Herzfrequenzzonen Z1–Z5, Training Effect und die Strecke (aus GPX/FIT oder einem Screenshot der Karte). Sportarten: Laufen, Trail, Velo, MTB, Langlauf, Wandern, Spinning.',
     },
     {
       q: 'Funktioniert es auch mit Videos?',
@@ -180,7 +180,7 @@ export const FAQ: Record<SeoLang, { q: string; a: string }[]> = {
     },
     {
       q: 'Quelles données puis-je mettre sur la photo ?',
-      a: 'Temps, distance, allure ou vitesse, dénivelé, fréquence cardiaque moyenne, calories, zones cardiaques Z1–Z5, Training Effect et le parcours (depuis GPX/FIT). Sports : course, trail, vélo, VTT, ski de fond, randonnée, spinning.',
+      a: 'Temps, distance, allure ou vitesse, dénivelé, fréquence cardiaque moyenne, calories, zones cardiaques Z1–Z5, Training Effect et le parcours (depuis GPX/FIT ou une capture de la carte). Sports : course, trail, vélo, VTT, ski de fond, randonnée, spinning.',
     },
     {
       q: 'Ça marche aussi avec les vidéos ?',
@@ -222,7 +222,7 @@ export const FAQ: Record<SeoLang, { q: string; a: string }[]> = {
     },
     {
       q: 'Which stats can I put on the photo?',
-      a: 'Time, distance, pace or speed, elevation, average heart rate, calories, heart rate zones Z1–Z5, Training Effect and the route (from GPX/FIT). Sports: running, trail, bike, MTB, cross-country skiing, hiking, spinning.',
+      a: 'Time, distance, pace or speed, elevation, average heart rate, calories, heart rate zones Z1–Z5, Training Effect and the route (from GPX/FIT or a screenshot of the map). Sports: running, trail, bike, MTB, cross-country skiing, hiking, spinning.',
     },
     { q: 'Does it work with videos too?', a: 'Yes: stats and text work on videos up to 60 seconds, with the original sound.' },
     {
