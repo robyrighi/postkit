@@ -11,18 +11,22 @@ interface Release {
 }
 export const RELEASES: Release[] = [
   {
-    id: '2026-11-25',
+    id: '2026-11-25b',
     items: {
       it: [
+        '🗺️ Tracciato da screenshot: carica lo screenshot della mappa di Garmin o Strava, tocca la linea e il percorso finisce sulla tua foto',
         '🎁 Download liberi e illimitati: niente più richiesta di nome ed email. Se vuoi le novità, trovi «Novità via email» in fondo alla pagina',
       ],
       en: [
+        '🗺️ Route from screenshot: load a screenshot of your Garmin or Strava map, tap the line and the route lands on your photo',
         '🎁 Free, unlimited downloads: no more name and email request. Want updates? Find “Updates by email” at the bottom of the page',
       ],
       de: [
+        '🗺️ Strecke aus Screenshot: Lade einen Screenshot der Garmin- oder Strava-Karte, tippe auf die Linie und die Strecke landet auf deinem Foto',
         '🎁 Freie, unbegrenzte Downloads: keine Abfrage von Name und E-Mail mehr. Lust auf Neuigkeiten? «Neuigkeiten per E-Mail» unten auf der Seite',
       ],
       fr: [
+        '🗺️ Parcours depuis une capture : charge une capture de ta carte Garmin ou Strava, touche la ligne et le parcours arrive sur ta photo',
         '🎁 Téléchargements libres et illimités : plus de demande de nom et d’e-mail. Envie des nouveautés ? « Nouveautés par e-mail » en bas de la page',
       ],
     },
