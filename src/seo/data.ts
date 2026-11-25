@@ -30,7 +30,7 @@ export const SEO: Record<SeoLang, SeoPage> = {
     ogAlt: 'PizKit: foto con le statistiche di corsa pronta per la storia Instagram',
     noscriptH1: 'PizKit — statistiche Strava e Garmin su foto e video, gratis',
     noscriptP:
-      'Metti i dati della tua corsa, uscita in bici o sci di fondo su una foto o un video: tempo, distanza, ritmo, dislivello, zone cardio. Li leggi da uno screenshot di Strava o Garmin, da un file GPX/FIT o li scrivi a mano, senza collegare account. In più testo sulle foto e panoramiche divise per il carosello Instagram. Gratis, senza filigrana e senza abbonamento; le foto restano sul tuo dispositivo. Attiva JavaScript per usare l’app.',
+      'Metti i dati della tua corsa, uscita in bici o sci di fondo su una foto o un video: tempo, distanza, ritmo, dislivello, zone cardio. Li leggi da uno screenshot di Strava o Garmin, da un file GPX/FIT o li scrivi a mano, senza collegare account. In più testo sulle foto e panoramiche divise per il carosello Instagram. Gratis, senza registrazione, senza filigrana e senza abbonamento; le foto restano sul tuo dispositivo. Attiva JavaScript per usare l’app.',
     faqTitle: 'Domande frequenti',
   },
   de: {
@@ -45,7 +45,7 @@ export const SEO: Record<SeoLang, SeoPage> = {
     ogAlt: 'PizKit: Foto mit Laufdaten, bereit für die Instagram Story',
     noscriptH1: 'PizKit — Strava- und Garmin-Daten auf Foto und Video, gratis',
     noscriptP:
-      'Bring die Daten deines Laufs, deiner Velotour oder deiner Langlaufrunde auf ein Foto oder Video: Zeit, Distanz, Pace, Höhenmeter, Herzfrequenzzonen. Aus einem Strava- oder Garmin-Screenshot, einer GPX/FIT-Datei oder von Hand, ohne Konto zu verbinden. Dazu Text auf Fotos und Panoramen für das Instagram-Karussell. Kostenlos, ohne Wasserzeichen und ohne Abo; deine Fotos bleiben auf deinem Gerät. Aktiviere JavaScript, um die App zu nutzen.',
+      'Bring die Daten deines Laufs, deiner Velotour oder deiner Langlaufrunde auf ein Foto oder Video: Zeit, Distanz, Pace, Höhenmeter, Herzfrequenzzonen. Aus einem Strava- oder Garmin-Screenshot, einer GPX/FIT-Datei oder von Hand, ohne Konto zu verbinden. Dazu Text auf Fotos und Panoramen für das Instagram-Karussell. Kostenlos, ohne Anmeldung, ohne Wasserzeichen und ohne Abo; deine Fotos bleiben auf deinem Gerät. Aktiviere JavaScript, um die App zu nutzen.',
     faqTitle: 'Häufige Fragen',
   },
   fr: {
@@ -60,7 +60,7 @@ export const SEO: Record<SeoLang, SeoPage> = {
     ogAlt: 'PizKit : photo avec les stats de course, prête pour la story Instagram',
     noscriptH1: 'PizKit — stats Strava et Garmin sur photo et vidéo, gratuit',
     noscriptP:
-      'Mets les données de ta course, sortie vélo ou ski de fond sur une photo ou une vidéo : temps, distance, allure, dénivelé, zones cardiaques. Depuis une capture d’écran Strava ou Garmin, un fichier GPX/FIT ou à la main, sans connecter de compte. En plus : texte sur photo et panoramas découpés pour le carrousel Instagram. Gratuit, sans filigrane et sans abonnement ; tes photos restent sur ton appareil. Active JavaScript pour utiliser l’app.',
+      'Mets les données de ta course, sortie vélo ou ski de fond sur une photo ou une vidéo : temps, distance, allure, dénivelé, zones cardiaques. Depuis une capture d’écran Strava ou Garmin, un fichier GPX/FIT ou à la main, sans connecter de compte. En plus : texte sur photo et panoramas découpés pour le carrousel Instagram. Gratuit, sans inscription, sans filigrane et sans abonnement ; tes photos restent sur ton appareil. Active JavaScript pour utiliser l’app.',
     faqTitle: 'Questions fréquentes',
   },
   en: {
@@ -75,7 +75,7 @@ export const SEO: Record<SeoLang, SeoPage> = {
     ogAlt: 'PizKit: photo with running stats, ready for an Instagram Story',
     noscriptH1: 'PizKit — Strava and Garmin stats on photos and videos, free',
     noscriptP:
-      'Put the stats of your run, ride or cross-country ski on a photo or video: time, distance, pace, elevation, heart rate zones. Read them from a Strava or Garmin screenshot, a GPX/FIT file or type them in, without connecting any account. Plus text on photos and panoramas split for Instagram carousels. Free, no watermark and no subscription; your photos stay on your device. Enable JavaScript to use the app.',
+      'Put the stats of your run, ride or cross-country ski on a photo or video: time, distance, pace, elevation, heart rate zones. Read them from a Strava or Garmin screenshot, a GPX/FIT file or type them in, without connecting any account. Plus text on photos and panoramas split for Instagram carousels. Free, no sign-up, no watermark and no subscription; your photos stay on your device. Enable JavaScript to use the app.',
     faqTitle: 'Frequently asked questions',
   },
 }
@@ -111,8 +111,8 @@ export const FAQ: Record<SeoLang, { q: string; a: string }[]> = {
       a: 'Con «Dividi la panoramica» la foto viene tagliata in 2–10 parti che, scorrendo, si uniscono senza stacchi.',
     },
     {
-      q: 'PizKit è gratis? Perché chiede l’email?',
-      a: 'Sì: niente abbonamento, niente filigrana, niente pubblicità. Il primo download è libero; dal secondo chiediamo una volta nome ed email, per tenere lontani i bot e, solo se lo scegli, per avvisarti delle novità. Non la diamo a nessuno.',
+      q: 'PizKit è gratis? Serve registrarsi?',
+      a: 'È gratis e senza registrazione: niente abbonamento, niente filigrana, niente pubblicità, download illimitati. Se vuoi, puoi lasciare l’email per sapere quando arrivano funzioni nuove; è facoltativo e non la diamo a nessuno.',
     },
     {
       q: 'Le mie foto vengono caricate su un server?',
@@ -153,8 +153,8 @@ export const FAQ: Record<SeoLang, { q: string; a: string }[]> = {
       a: 'Mit «Panorama teilen» wird das Bild in 2–10 Teile geschnitten, die beim Wischen nahtlos ineinander übergehen.',
     },
     {
-      q: 'Ist PizKit kostenlos? Warum fragt es nach der E-Mail?',
-      a: 'Ja: kein Abo, kein Wasserzeichen, keine Werbung. Der erste Download ist frei; ab dem zweiten fragen wir einmal nach Name und E-Mail, um Bots fernzuhalten und dich, nur wenn du willst, über Neuigkeiten zu informieren. Wir geben sie niemandem weiter.',
+      q: 'Ist PizKit kostenlos? Muss ich mich anmelden?',
+      a: 'Kostenlos und ohne Anmeldung: kein Abo, kein Wasserzeichen, keine Werbung, unbegrenzte Downloads. Wenn du willst, kannst du deine E-Mail für Neuigkeiten hinterlassen; das ist freiwillig und wir geben sie niemandem weiter.',
     },
     {
       q: 'Werden meine Fotos auf einen Server geladen?',
@@ -195,8 +195,8 @@ export const FAQ: Record<SeoLang, { q: string; a: string }[]> = {
       a: 'Avec « Diviser le panorama », l’image est coupée en 2 à 10 parties qui s’enchaînent sans coupure en faisant défiler.',
     },
     {
-      q: 'PizKit est-il gratuit ? Pourquoi demande-t-il un e-mail ?',
-      a: 'Oui : sans abonnement, sans filigrane, sans publicité. Le premier téléchargement est libre ; dès le deuxième on demande une fois ton nom et ton e-mail, pour tenir les bots à distance et, seulement si tu le veux, te prévenir des nouveautés. On ne le donne à personne.',
+      q: 'PizKit est-il gratuit ? Faut-il s’inscrire ?',
+      a: 'Gratuit et sans inscription : sans abonnement, sans filigrane, sans publicité, téléchargements illimités. Si tu veux, tu peux laisser ton e-mail pour être prévenu des nouveautés ; c’est facultatif et on ne le donne à personne.',
     },
     {
       q: 'Mes photos sont-elles envoyées sur un serveur ?',
@@ -234,8 +234,8 @@ export const FAQ: Record<SeoLang, { q: string; a: string }[]> = {
       a: '“Split panorama” cuts the image into 2–10 parts that join seamlessly as you swipe.',
     },
     {
-      q: 'Is PizKit free? Why does it ask for my email?',
-      a: 'Yes: no subscription, no watermark, no ads. The first download is open; from the second we ask once for your name and email, to keep bots out and, only if you choose, to tell you about new features. We never share it.',
+      q: 'Is PizKit free? Do I need to sign up?',
+      a: 'Free and no sign-up: no subscription, no watermark, no ads, unlimited downloads. If you like, you can leave your email to hear about new features; it’s optional and we never share it.',
     },
     {
       q: 'Are my photos uploaded to a server?',

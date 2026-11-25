@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { IconPanorama, IconSport, IconText } from './components/Icons'
 import { isStandalone } from './components/InstallApp'
 import { Logo } from './components/Logo'
-import { ProfileGateProvider } from './components/ProfileGate'
+import { ProfileGateProvider, useOpenInvite } from './components/ProfileGate'
 import { I18nProvider, LANGS, useI18n, type Key, type Lang } from './i18n'
 import { register, touchVisitor, track } from './lib/api'
 import { trackArrival } from './lib/channel'
@@ -74,6 +74,7 @@ function Shell() {
   const [showNews, setShowNews] = useState(false)
   const route = useRoute()
   const { t } = useI18n()
+  const openInvite = useOpenInvite()
 
   useEffect(() => {
     // prima il visitatore, poi l'evento di arrivo (evita doppie creazioni in parallelo)
@@ -140,6 +141,16 @@ function Shell() {
             }}
           >
             {t('news.link')}
+          </a>{' '}
+          ·{' '}
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault()
+              openInvite()
+            }}
+          >
+            {t('footer.invite')}
           </a>{' '}
           ·{' '}
           <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" onClick={() => track('app', 'instagram')}>

@@ -21,7 +21,14 @@ interface Stats {
   modules: { module: string; opens: number; exports: number; saves: number }[]
   platforms: { platform: string; n: number }[]
   languages: { lang: string; n: number }[]
-  feedback: { created_at: string; module: string; score: number; comment: string | null; name: string | null; email: string | null }[]
+  feedback: {
+    created_at: string
+    module: string
+    score: number
+    comment: string | null
+    name: string | null
+    email: string | null
+  }[]
 }
 interface Channel {
   ch: string
@@ -75,7 +82,7 @@ const MODULES: Record<string, string> = {
   privacy: '🔒 Privacy',
   app: '📲 App',
   lang: '🌐 Lingua',
-  gate: '✉️ Richiesta nome/email',
+  gate: '✉️ Invito email novità',
 }
 const EVENTS: Record<string, string> = {
   open: 'ha aperto',
@@ -135,11 +142,26 @@ function metaText(m: Record<string, unknown> | null): string {
 }
 
 function downloadCsv(rows: VisitorRow[]) {
-  const head = ['nome', 'email', 'newsletter', 'piattaforma', 'lingua', 'visite', 'immagini_create', 'salvataggi', 'prima_visita', 'ultima_visita']
+  const head = [
+    'nome',
+    'email',
+    'newsletter',
+    'piattaforma',
+    'lingua',
+    'visite',
+    'immagini_create',
+    'salvataggi',
+    'prima_visita',
+    'ultima_visita',
+  ]
   const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`
   const lines = rows
     .filter((r) => r.email)
-    .map((r) => [r.name, r.email, r.newsletter ? 'si' : 'no', r.platform, r.lang, r.visits, r.exports, r.saves, r.first_seen, r.last_seen].map(esc).join(';'))
+    .map((r) =>
+      [r.name, r.email, r.newsletter ? 'si' : 'no', r.platform, r.lang, r.visits, r.exports, r.saves, r.first_seen, r.last_seen]
+        .map(esc)
+        .join(';'),
+    )
   const blob = new Blob(['﻿' + [head.join(';'), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
@@ -197,8 +219,8 @@ function Login() {
         ) : (
           <>
             <p className="muted">
-              Controlla la posta di <strong>{email}</strong> e inserisci il codice. Se nell’email c’è un link invece del
-              codice, puoi anche cliccare quello (su questo stesso browser).
+              Controlla la posta di <strong>{email}</strong> e inserisci il codice. Se nell’email c’è un link invece del codice,
+              puoi anche cliccare quello (su questo stesso browser).
             </p>
             <label>
               Codice
@@ -246,7 +268,11 @@ function Bars({ data }: { data: Stats['daily'] }) {
   return (
     <div className="bars" role="img" aria-label="Utilizzo ultimi 30 giorni">
       {data.map((d) => (
-        <div key={d.day} className="bar-col" title={`${new Date(d.day).toLocaleDateString('it-CH')}: ${d.visitors} visitatori, ${d.exports} immagini`}>
+        <div
+          key={d.day}
+          className="bar-col"
+          title={`${new Date(d.day).toLocaleDateString('it-CH')}: ${d.visitors} visitatori, ${d.exports} immagini`}
+        >
           <div className="bar v" style={{ height: `${(d.visitors / max) * 100}%` }} />
           <div className="bar e" style={{ height: `${(d.exports / max) * 100}%` }} />
         </div>
@@ -327,15 +353,16 @@ function Dashboard({ session }: { session: Session }) {
     const q = search.trim().toLowerCase()
     return visitors.filter(
       (v) =>
-        (!onlyRegistered || v.email) &&
-        (!q || [v.name, v.email, v.platform, v.id].some((x) => x?.toLowerCase().includes(q))),
+        (!onlyRegistered || v.email) && (!q || [v.name, v.email, v.platform, v.id].some((x) => x?.toLowerCase().includes(q))),
     )
   }, [visitors, search, onlyRegistered])
 
   const filteredEvents = useMemo(() => {
     const q = search.trim().toLowerCase()
     if (!q) return events
-    return events.filter((e) => [e.name, e.email, e.module, e.event_type, metaText(e.meta)].some((x) => x?.toLowerCase().includes(q)))
+    return events.filter((e) =>
+      [e.name, e.email, e.module, e.event_type, metaText(e.meta)].some((x) => x?.toLowerCase().includes(q)),
+    )
   }, [events, search])
 
   const logout = () => supabase.auth.signOut()
@@ -404,7 +431,11 @@ function Dashboard({ session }: { session: Session }) {
         <>
           <div className="kpis">
             <Kpi label="Visitatori" value={o.visitors} sub={`${o.active_today} oggi · ${o.active7} in 7 giorni`} />
-            <Kpi label="Registrati" value={o.registered} sub={o.visitors ? `${Math.round((o.registered / o.visitors) * 100)}% dei visitatori` : ''} />
+            <Kpi
+              label="Registrati"
+              value={o.registered}
+              sub={o.visitors ? `${Math.round((o.registered / o.visitors) * 100)}% dei visitatori` : ''}
+            />
             <Kpi label="Immagini create" value={o.exports} sub={`${o.saves} salvate`} />
             <Kpi label="Voto medio" value={o.avg_score ? `${o.avg_score} / 5` : '—'} sub={`${o.ratings} valutazioni`} />
           </div>
@@ -427,9 +458,9 @@ function Dashboard({ session }: { session: Session }) {
                   { label: 'Caricano una foto', n: funnel.upload },
                   { label: 'Creano un’immagine', n: funnel.export },
                   { label: 'Download libero', n: funnel.free_download },
-                  { label: 'Vedono nome/email', n: funnel.gate_shown },
-                  { label: 'Annullano', n: funnel.gate_cancel },
-                  { label: 'Si registrano', n: funnel.gate_submit },
+                  { label: 'Vedono l’invito', n: funnel.gate_shown },
+                  { label: 'No grazie', n: funnel.gate_cancel },
+                  { label: 'Lasciano l’email', n: funnel.gate_submit },
                   { label: 'Salvano', n: funnel.save },
                 ]}
               />

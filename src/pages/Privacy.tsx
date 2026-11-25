@@ -31,8 +31,8 @@ const DOCS: Record<Lang, Doc> = {
       {
         h: 'Cosa raccogliamo',
         li: [
-          'Nome ed email: solo dal secondo download in poi (la prima immagine è libera). Servono a tenere lontani i bot e gli abusi e a sapere quante persone usano PizKit. Non li vendiamo né li cediamo a nessuno. Sono leggibili solo dall’amministratore; puoi chiederne la cancellazione in ogni momento.',
-          'Email di novità: solo se spunti la casella facoltativa (al massimo qualche email all’anno). Puoi revocare il consenso in ogni momento scrivendo all’indirizzo qui sotto.',
+          'Email (e nome, facoltativo): solo se scegli di ricevere le novità. Per usare PizKit e scaricare non servono. Servono solo a inviarti le novità. Non li vendiamo né li cediamo a nessuno. Sono leggibili solo dall’amministratore; puoi chiederne la cancellazione in ogni momento.',
+          'Email di novità: al massimo qualche email all’anno. Puoi revocare il consenso in ogni momento scrivendo all’indirizzo qui sotto.',
           'Statistiche d’uso: quale strumento apri, quali opzioni scegli, quante immagini crei e salvi, tipo di dispositivo, lingua e da dove sei arrivato (solo il nome del canale, es. “instagram” o “google”). Mai il contenuto delle foto o il testo che scrivi.',
           'Valutazioni: la faccina e il commento, se decidi di lasciarli.',
         ],
@@ -69,8 +69,8 @@ const DOCS: Record<Lang, Doc> = {
       {
         h: 'What we collect',
         li: [
-          'Name and email: only from your second download on (the first image is free). They keep bots and abuse out and tell us how many people use PizKit. We never sell or share them. Only the administrator can read them; you can ask for them to be deleted at any time.',
-          'Update emails: only if you tick the optional box (a few emails a year at most). You can withdraw your consent at any time by writing to the address below.',
+          'Email (and name, optional): only if you choose to receive updates. You don’t need them to use PizKit or download. They are used only to send you updates. We never sell or share them. Only the administrator can read them; you can ask for them to be deleted at any time.',
+          'Update emails: a few a year at most. You can withdraw your consent at any time by writing to the address below.',
           'Usage statistics: which tool you open, which options you choose, how many images you create and save, device type, language and where you came from (only the channel name, e.g. “instagram” or “google”). Never the content of your photos or the text you write.',
           'Ratings: the face and comment, if you choose to leave them.',
         ],
@@ -107,8 +107,8 @@ const DOCS: Record<Lang, Doc> = {
       {
         h: 'Was wir erfassen',
         li: [
-          'Name und E-Mail: erst ab dem zweiten Download (das erste Bild ist frei). Sie halten Bots und Missbrauch fern und zeigen uns, wie viele Menschen PizKit nutzen. Wir verkaufen oder teilen sie nie. Nur der Administrator kann sie lesen; du kannst jederzeit ihre Löschung verlangen.',
-          'E-Mails zu Neuigkeiten: nur wenn du das optionale Kästchen ankreuzt (höchstens ein paar E-Mails pro Jahr). Du kannst die Einwilligung jederzeit widerrufen, indem du an die Adresse unten schreibst.',
+          'E-Mail (und Name, freiwillig): nur wenn du Neuigkeiten erhalten möchtest. Zum Nutzen und Herunterladen brauchst du sie nicht. Sie dienen nur dazu, dir Neuigkeiten zu schicken. Wir verkaufen oder teilen sie nie. Nur der Administrator kann sie lesen; du kannst jederzeit ihre Löschung verlangen.',
+          'E-Mails zu Neuigkeiten: höchstens ein paar pro Jahr. Du kannst die Einwilligung jederzeit widerrufen, indem du an die Adresse unten schreibst.',
           'Nutzungsstatistiken: welches Werkzeug du öffnest, welche Optionen du wählst, wie viele Bilder du erstellst und speicherst, Gerätetyp, Sprache und woher du kommst (nur der Name des Kanals, z. B. „instagram“ oder „google“). Nie der Inhalt deiner Fotos oder der Text, den du schreibst.',
           'Bewertungen: das Gesicht und der Kommentar, falls du sie hinterlässt.',
         ],
@@ -145,8 +145,8 @@ const DOCS: Record<Lang, Doc> = {
       {
         h: 'Ce que nous collectons',
         li: [
-          'Nom et e-mail : seulement à partir du deuxième téléchargement (la première image est libre). Ils tiennent les bots et les abus à distance et nous disent combien de personnes utilisent PizKit. Nous ne les vendons ni ne les cédons jamais. Seul l’administrateur peut les lire ; tu peux demander leur suppression à tout moment.',
-          'E-mails de nouveautés : seulement si tu coches la case facultative (quelques e-mails par an au maximum). Tu peux retirer ton consentement à tout moment en écrivant à l’adresse ci-dessous.',
+          'E-mail (et prénom, facultatif) : seulement si tu choisis de recevoir les nouveautés. Pour utiliser PizKit et télécharger, ils ne sont pas nécessaires. Ils servent uniquement à t’envoyer les nouveautés. Nous ne les vendons ni ne les cédons jamais. Seul l’administrateur peut les lire ; tu peux demander leur suppression à tout moment.',
+          'E-mails de nouveautés : quelques-uns par an au maximum. Tu peux retirer ton consentement à tout moment en écrivant à l’adresse ci-dessous.',
           'Statistiques d’utilisation : quel outil tu ouvres, quelles options tu choisis, combien d’images tu crées et enregistres, type d’appareil, langue et d’où tu viens (seulement le nom du canal, p. ex. « instagram » ou « google »). Jamais le contenu de tes photos ni le texte que tu écris.',
           'Évaluations : le visage et le commentaire, si tu choisis de les laisser.',
         ],

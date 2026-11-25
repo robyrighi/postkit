@@ -3,114 +3,144 @@ import { useI18n } from '../i18n'
 import { register, track } from '../lib/api'
 import { getProfile, saveProfile } from '../lib/visitor'
 
-// Quanti download si possono fare senza registrarsi
-const FREE_DOWNLOADS = 1
-const FREE_KEY = 'pk_free_used'
+// I download sono SEMPRE liberi. Dopo un download, chi non ha ancora lasciato l'email
+// vede (al massimo due volte) un invito facoltativo a ricevere le novità.
+const DL_KEY = 'pk_free_used' // numero di download fatti su questo dispositivo
+const DISMISS_KEY = 'pk_invite_dismissed' // "volte|timestamp dell'ultimo No grazie"
+const SECOND_INVITE_AFTER = 10 // download prima di riproporre l'invito
+const SECOND_INVITE_DAYS = 14 // giorni minimi prima di riproporlo
 
 type Ensure = (module: string) => Promise<boolean>
 const Ctx = createContext<Ensure>(async () => true)
+const InviteCtx = createContext<() => void>(() => {})
 
-/**
- * Hook: il primo download è libero; dal secondo chiede nome ed email
- * (una volta sola). Ogni passaggio viene registrato nelle statistiche.
- */
+/** Hook chiamato prima di ogni download: non blocca mai, conta e al caso propone l'invito. */
 // eslint-disable-next-line react-refresh/only-export-components
 export const useEnsureProfile = () => useContext(Ctx)
+/** Apre l'invito alle novità via email (es. dal piè di pagina). */
+// eslint-disable-next-line react-refresh/only-export-components
+export const useOpenInvite = () => useContext(InviteCtx)
 
-function freeUsed(): number {
+function readNum(key: string): number {
   try {
-    return Number(localStorage.getItem(FREE_KEY) || 0)
+    return Number(localStorage.getItem(key) || 0)
   } catch {
     return 0
   }
 }
 
-function markFreeUsed() {
+function write(key: string, value: string) {
   try {
-    localStorage.setItem(FREE_KEY, String(freeUsed() + 1))
+    localStorage.setItem(key, value)
   } catch {
-    /* ignora */
+    /* modalità privata: pazienza */
   }
+}
+
+function dismissInfo(): { times: number; at: number } {
+  try {
+    const [t, a] = (localStorage.getItem(DISMISS_KEY) || '0|0').split('|')
+    return { times: Number(t) || 0, at: Number(a) || 0 }
+  } catch {
+    return { times: 0, at: 0 }
+  }
+}
+
+function shouldInvite(downloads: number): boolean {
+  if (getProfile()) return false
+  const d = dismissInfo()
+  if (d.times === 0) return downloads >= 1
+  if (d.times === 1) return downloads >= SECOND_INVITE_AFTER && Date.now() - d.at > SECOND_INVITE_DAYS * 864e5
+  return false
 }
 
 export function ProfileGateProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
-  const resolver = useRef<((ok: boolean) => void) | null>(null)
   const fromModule = useRef('')
 
-  const ensure = useCallback<Ensure>((module) => {
-    if (getProfile()) return Promise.resolve(true)
-    const used = freeUsed()
-    if (used < FREE_DOWNLOADS) {
-      markFreeUsed()
-      track('gate', 'free_download', { from: module, n: used + 1 })
-      return Promise.resolve(true)
-    }
-    fromModule.current = module
-    track('gate', 'shown', { from: module })
+  const show = useCallback((from: string) => {
+    fromModule.current = from
+    track('gate', 'shown', { from })
     setOpen(true)
-    return new Promise<boolean>((res) => {
-      resolver.current = res
-    })
   }, [])
 
-  const close = (ok: boolean, newsletter?: boolean) => {
-    track(
-      'gate',
-      ok ? 'submit' : 'cancel',
-      ok ? { from: fromModule.current, newsletter: !!newsletter } : { from: fromModule.current },
-    )
+  const ensure = useCallback<Ensure>(
+    (module) => {
+      const n = readNum(DL_KEY) + 1
+      write(DL_KEY, String(n))
+      track('gate', 'free_download', { from: module, n })
+      // L'invito arriva dopo il download, senza fermarlo
+      if (shouldInvite(n)) setTimeout(() => show(module), 1200)
+      return Promise.resolve(true)
+    },
+    [show],
+  )
+
+  const openInvite = useCallback(() => show('footer'), [show])
+
+  const close = (ok: boolean) => {
+    track('gate', ok ? 'submit' : 'cancel', { from: fromModule.current })
+    if (!ok && fromModule.current !== 'footer') {
+      write(DISMISS_KEY, `${dismissInfo().times + 1}|${Date.now()}`)
+    }
     setOpen(false)
-    resolver.current?.(ok)
-    resolver.current = null
   }
 
   return (
     <Ctx.Provider value={ensure}>
-      {children}
-      {open && <GateModal onDone={close} />}
+      <InviteCtx.Provider value={openInvite}>
+        {children}
+        {open && <InviteModal onDone={close} />}
+      </InviteCtx.Provider>
     </Ctx.Provider>
   )
 }
 
-function GateModal({ onDone }: { onDone: (ok: boolean, newsletter?: boolean) => void }) {
+function InviteModal({ onDone }: { onDone: (ok: boolean) => void }) {
   const { t } = useI18n()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [consent, setConsent] = useState(false)
-  const [news, setNews] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [done, setDone] = useState(false)
   // Anti-bot: campo trappola invisibile (le persone non lo vedono) e tempo minimo di compilazione
   const [trap, setTrap] = useState('')
   const [openedAt] = useState(() => Date.now())
 
-  const valid = name.trim().length >= 2 && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()) && consent
+  const nameOk = name.trim().length === 0 || name.trim().length >= 2
+  const valid = nameOk && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()) && consent
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!valid) return
-    setBusy(true)
-    const profile = { name: name.trim(), email: email.trim().toLowerCase(), newsletter: news }
     if (trap || Date.now() - openedAt < 1500) {
-      // Probabile bot: non registriamo nulla e non salviamo il profilo
+      // Probabile bot: non registriamo nulla
       track('gate', 'bot_blocked', { trap: !!trap })
-      setBusy(false)
       onDone(false)
       return
     }
+    setBusy(true)
+    const profile = { name: name.trim(), email: email.trim().toLowerCase(), newsletter: true }
     try {
-      await register(profile.name, profile.email, news)
+      await register(profile.name, profile.email, true)
     } catch {
-      // Rete assente o errore: non blocchiamo l'utente, riproveremo alla prossima visita
-      try {
-        localStorage.setItem('pk_pending_register', '1')
-      } catch {
-        /* ignora */
-      }
+      // Rete assente o errore: riproveremo alla prossima visita
+      write('pk_pending_register', '1')
     }
     saveProfile(profile)
     setBusy(false)
-    onDone(true, news)
+    setDone(true)
+    setTimeout(() => onDone(true), 1600)
+  }
+
+  if (done) {
+    return (
+      <div className="modal-backdrop" role="dialog" aria-modal="true">
+        <div className="modal">
+          <h2>{t('gate.thanks')}</h2>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -118,10 +148,6 @@ function GateModal({ onDone }: { onDone: (ok: boolean, newsletter?: boolean) => 
       <form className="modal" onSubmit={submit}>
         <h2 id="gate-title">{t('gate.title')}</h2>
         <p className="muted">{t('gate.text')}</p>
-        <label>
-          {t('gate.name')}
-          <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" maxLength={80} required />
-        </label>
         <label>
           {t('gate.email')}
           <input
@@ -133,6 +159,10 @@ function GateModal({ onDone }: { onDone: (ok: boolean, newsletter?: boolean) => 
             maxLength={254}
             required
           />
+        </label>
+        <label>
+          {t('gate.name')}
+          <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" maxLength={80} />
         </label>
         <input
           className="hp-field"
@@ -153,10 +183,6 @@ function GateModal({ onDone }: { onDone: (ok: boolean, newsletter?: boolean) => 
             </a>
             {t('gate.consent2')}
           </span>
-        </label>
-        <label className="check">
-          <input type="checkbox" checked={news} onChange={(e) => setNews(e.target.checked)} />
-          <span>{t('gate.newsletter')}</span>
         </label>
         <div className="row end">
           <button type="button" className="btn ghost" onClick={() => onDone(false)} disabled={busy}>

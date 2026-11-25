@@ -11,12 +11,37 @@ interface Release {
 }
 export const RELEASES: Release[] = [
   {
+    id: '2026-11-25',
+    items: {
+      it: [
+        '🎁 Download liberi e illimitati: niente più richiesta di nome ed email. Se vuoi le novità, trovi «Novità via email» in fondo alla pagina',
+      ],
+      en: [
+        '🎁 Free, unlimited downloads: no more name and email request. Want updates? Find “Updates by email” at the bottom of the page',
+      ],
+      de: [
+        '🎁 Freie, unbegrenzte Downloads: keine Abfrage von Name und E-Mail mehr. Lust auf Neuigkeiten? «Neuigkeiten per E-Mail» unten auf der Seite',
+      ],
+      fr: [
+        '🎁 Téléchargements libres et illimités : plus de demande de nom et d’e-mail. Envie des nouveautés ? « Nouveautés par e-mail » en bas de la page',
+      ],
+    },
+  },
+  {
     id: '2026-11-24b',
     items: {
-      it: ['📷 Leggi da screenshot: carica gli screenshot di Garmin o Strava e la card sport si compila da sola (tempo, frequenza, calorie, zone)'],
-      en: ['📷 Read from screenshot: load your Garmin or Strava screenshots and the sport card fills itself in (time, heart rate, calories, zones)'],
-      de: ['📷 Aus Screenshot lesen: Lade Screenshots von Garmin oder Strava und die Sport-Card füllt sich selbst aus (Zeit, Herzfrequenz, Kalorien, Zonen)'],
-      fr: ['📷 Lire une capture d’écran : charge tes captures Garmin ou Strava et la carte sport se remplit toute seule (temps, fréquence, calories, zones)'],
+      it: [
+        '📷 Leggi da screenshot: carica gli screenshot di Garmin o Strava e la card sport si compila da sola (tempo, frequenza, calorie, zone)',
+      ],
+      en: [
+        '📷 Read from screenshot: load your Garmin or Strava screenshots and the sport card fills itself in (time, heart rate, calories, zones)',
+      ],
+      de: [
+        '📷 Aus Screenshot lesen: Lade Screenshots von Garmin oder Strava und die Sport-Card füllt sich selbst aus (Zeit, Herzfrequenz, Kalorien, Zonen)',
+      ],
+      fr: [
+        '📷 Lire une capture d’écran : charge tes captures Garmin ou Strava et la carte sport se remplit toute seule (temps, fréquence, calories, zones)',
+      ],
     },
   },
   {
