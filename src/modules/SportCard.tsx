@@ -25,6 +25,8 @@ import { fmtDuration, humanDuration, parseDuration, parseTimeSmart } from '../li
 import { drawRoute, readActivityFile } from '../lib/activityFile'
 import type { OcrProgress } from '../lib/ocr'
 
+// iOS rende grigi i .fit/.gpx se il campo file filtra per estensione: lì niente filtro
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 const MODULE = 'sport'
 
 const SPORTS = [
@@ -577,7 +579,7 @@ export function SportCard() {
               <input
                 ref={actInput}
                 type="file"
-                accept=".gpx,.fit,application/gpx+xml"
+                accept={IS_IOS ? undefined : '.gpx,.fit,.zip,application/gpx+xml,application/zip'}
                 hidden
                 onChange={(e) => {
                   const f = e.target.files?.[0]

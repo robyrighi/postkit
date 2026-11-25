@@ -170,9 +170,29 @@ export async function parseFit(buf: ArrayBuffer): Promise<ActivityData> {
 }
 
 export async function readActivityFile(file: File): Promise<ActivityData> {
-  const name = file.name.toLowerCase()
-  if (name.endsWith('.fit')) return parseFit(await file.arrayBuffer())
-  if (name.endsWith('.gpx') || file.type.includes('gpx') || file.type.includes('xml')) return parseGpx(await file.text())
+  return readActivityBytes(file.name, new Uint8Array(await file.arrayBuffer()), file.type)
+}
+
+/**
+ * Riconosce il formato dal contenuto, non solo dal nome: FIT, GPX oppure ZIP
+ * (Garmin Connect web «Esporta originale» scarica un .zip con dentro il .fit).
+ */
+async function readActivityBytes(name: string, bytes: Uint8Array, type = ''): Promise<ActivityData> {
+  const lower = name.toLowerCase()
+  const isZip = bytes[0] === 0x50 && bytes[1] === 0x4b // "PK"
+  const isFit = bytes.length > 12 && String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11]) === '.FIT'
+  if (isZip || lower.endsWith('.zip')) {
+    const { default: JSZip } = await import('jszip')
+    const zip = await JSZip.loadAsync(bytes)
+    const entry = Object.values(zip.files).find((f) => !f.dir && /\.(fit|gpx)$/i.test(f.name))
+    if (!entry) throw new Error('Nessun file FIT o GPX nello ZIP')
+    return readActivityBytes(entry.name, await entry.async('uint8array'))
+  }
+  if (isFit || lower.endsWith('.fit')) return parseFit(bytes.slice().buffer)
+  const text = new TextDecoder().decode(bytes)
+  if (lower.endsWith('.gpx') || type.includes('gpx') || type.includes('xml') || /<gpx[\s>]/.test(text.slice(0, 2000))) {
+    return parseGpx(text)
+  }
   throw new Error('Formato non supportato')
 }
 
