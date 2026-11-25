@@ -163,7 +163,7 @@ function Login() {
     setMsg('')
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
-      options: { shouldCreateUser: true, emailRedirectTo: window.location.origin + window.location.pathname },
+      options: { shouldCreateUser: false, emailRedirectTo: window.location.origin + window.location.pathname },
     })
     setBusy(false)
     if (error) setMsg('Invio non riuscito: ' + error.message)

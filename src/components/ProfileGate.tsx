@@ -55,7 +55,11 @@ export function ProfileGateProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const close = (ok: boolean, newsletter?: boolean) => {
-    track('gate', ok ? 'submit' : 'cancel', ok ? { from: fromModule.current, newsletter: !!newsletter } : { from: fromModule.current })
+    track(
+      'gate',
+      ok ? 'submit' : 'cancel',
+      ok ? { from: fromModule.current, newsletter: !!newsletter } : { from: fromModule.current },
+    )
     setOpen(false)
     resolver.current?.(ok)
     resolver.current = null
@@ -76,6 +80,9 @@ function GateModal({ onDone }: { onDone: (ok: boolean, newsletter?: boolean) => 
   const [consent, setConsent] = useState(false)
   const [news, setNews] = useState(false)
   const [busy, setBusy] = useState(false)
+  // Anti-bot: campo trappola invisibile (le persone non lo vedono) e tempo minimo di compilazione
+  const [trap, setTrap] = useState('')
+  const [openedAt] = useState(() => Date.now())
 
   const valid = name.trim().length >= 2 && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()) && consent
 
@@ -84,6 +91,13 @@ function GateModal({ onDone }: { onDone: (ok: boolean, newsletter?: boolean) => 
     if (!valid) return
     setBusy(true)
     const profile = { name: name.trim(), email: email.trim().toLowerCase(), newsletter: news }
+    if (trap || Date.now() - openedAt < 1500) {
+      // Probabile bot: non registriamo nulla e non salviamo il profilo
+      track('gate', 'bot_blocked', { trap: !!trap })
+      setBusy(false)
+      onDone(false)
+      return
+    }
     try {
       await register(profile.name, profile.email, news)
     } catch {
@@ -120,6 +134,16 @@ function GateModal({ onDone }: { onDone: (ok: boolean, newsletter?: boolean) => 
             required
           />
         </label>
+        <input
+          className="hp-field"
+          type="text"
+          name="pk_hp_url"
+          value={trap}
+          onChange={(e) => setTrap(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+        />
         <label className="check">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
           <span>

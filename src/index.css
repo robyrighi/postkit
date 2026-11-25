@@ -1615,3 +1615,13 @@ details.more[open] > :not(summary) {
   color: var(--muted, #c9c2da);
   line-height: 1.5;
 }
+
+/* Campo trappola anti-bot: fuori schermo, invisibile alle persone */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
