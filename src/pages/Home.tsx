@@ -66,11 +66,23 @@ export function Home() {
   const [showSticky, setShowSticky] = useState(false)
 
   // Il pulsante fisso compare solo quando quello in alto non si vede più
+  // e sparisce quando si arriva al piè di pagina, per non coprire i link
   useEffect(() => {
     const el = heroCta.current
+    const footer = document.querySelector('.footer')
     if (!el || !('IntersectionObserver' in window)) return
-    const io = new IntersectionObserver(([e]) => setShowSticky(!e.isIntersecting && e.boundingClientRect.top < 0))
+    let heroGone = false
+    let footerVisible = false
+    const update = () => setShowSticky(heroGone && !footerVisible)
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.target === el) heroGone = !e.isIntersecting && e.boundingClientRect.top < 0
+        else footerVisible = e.isIntersecting
+      }
+      update()
+    })
     io.observe(el)
+    if (footer) io.observe(footer)
     return () => io.disconnect()
   }, [])
 

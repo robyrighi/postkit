@@ -2033,7 +2033,7 @@ details.more[open] > :not(summary) {
     width: 100%;
   }
   .home {
-    padding-bottom: 90px;
+    padding-bottom: 16px;
   }
 }
 
