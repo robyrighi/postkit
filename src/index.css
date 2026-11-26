@@ -2012,8 +2012,11 @@ details.more[open] > :not(summary) {
   }
   .sticky-cta {
     display: block;
-    transform: translateY(140%);
-    transition: transform 0.25s ease;
+    transform: translateY(calc(100% + 60px));
+    visibility: hidden;
+    transition:
+      transform 0.25s ease,
+      visibility 0s linear 0.25s;
     position: fixed;
     left: 12px;
     right: 12px;
@@ -2028,6 +2031,10 @@ details.more[open] > :not(summary) {
   }
   .sticky-cta.show {
     transform: none;
+    visibility: visible;
+    transition:
+      transform 0.25s ease,
+      visibility 0s;
   }
   .sticky-cta .btn {
     width: 100%;

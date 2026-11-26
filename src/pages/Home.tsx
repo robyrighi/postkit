@@ -65,25 +65,23 @@ export function Home() {
   const heroCta = useRef<HTMLDivElement>(null)
   const [showSticky, setShowSticky] = useState(false)
 
-  // Il pulsante fisso compare solo quando quello in alto non si vede più
+  // Il pulsante fisso compare solo quando quello in alto non si vede più,
   // e sparisce quando si arriva al piè di pagina, per non coprire i link
   useEffect(() => {
-    const el = heroCta.current
-    const footer = document.querySelector('.footer')
-    if (!el || !('IntersectionObserver' in window)) return
-    let heroGone = false
-    let footerVisible = false
-    const update = () => setShowSticky(heroGone && !footerVisible)
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) {
-        if (e.target === el) heroGone = !e.isIntersecting && e.boundingClientRect.top < 0
-        else footerVisible = e.isIntersecting
-      }
-      update()
-    })
-    io.observe(el)
-    if (footer) io.observe(footer)
-    return () => io.disconnect()
+    const update = () => {
+      const hero = heroCta.current?.getBoundingClientRect()
+      const footer = document.querySelector('.footer')?.getBoundingClientRect()
+      const heroGone = !!hero && hero.bottom < 0
+      const nearFooter = !!footer && footer.top < window.innerHeight - 40
+      setShowSticky(heroGone && !nearFooter)
+    }
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      window.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
   }, [])
 
   const pickPhoto = (from: string) => {
