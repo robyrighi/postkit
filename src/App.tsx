@@ -106,7 +106,7 @@ function Shell() {
         <a href="#/" className="brand">
           <Logo size={38} />
           <span className="brand-name">
-            Piz<span className="grad">Kit</span>
+            PizKit<span className="wm-dot">.</span>
           </span>
         </a>
         <div className="nav-right">

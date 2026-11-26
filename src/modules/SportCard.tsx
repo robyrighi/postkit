@@ -24,6 +24,7 @@ import { drawBadge, drawOverlay, loadAllFonts, pickContrast } from '../lib/templ
 import { fmtDuration, humanDuration, parseDuration, parseTimeSmart } from '../lib/time'
 import { drawRoute, readActivityFile } from '../lib/activityFile'
 import { RouteShotPicker } from '../components/RouteShotPicker'
+import { takeHandOff } from '../lib/handoff'
 import type { OcrProgress } from '../lib/ocr'
 
 // iOS rende grigi i .fit/.gpx se il campo file filtra per estensione: lì niente filtro
@@ -121,7 +122,11 @@ export function SportCard() {
     } catch {
       /* storage non disponibile */
     }
-    if (demo) {
+    // Arrivo da "Carica la tua foto" o "Ho uno screenshot" in home
+    const ho = takeHandOff()
+    if (ho.photo) onFile(ho.photo)
+    if (ho.shots?.length) onScreenshots(ho.shots)
+    if (demo && !ho.photo) {
       fetch(`${import.meta.env.BASE_URL}samples/sport.jpg`)
         .then((r) => r.blob())
         .then((b) => onFile(new File([b], 'sport.jpg', { type: 'image/jpeg' })))
@@ -565,7 +570,32 @@ export function SportCard() {
       </header>
 
       {!img ? (
-        <FilePick onFile={onFile} label={t('sport.pick')} sample="sport.jpg" video />
+        <>
+          {(ocr || importMsg) && (
+            <div className="shot-status">
+              {ocr ? (
+                <p className="muted small">
+                  ⏳{' '}
+                  {ocr.phase === 'load'
+                    ? t('ocr.loading')
+                    : t('ocr.reading', { n: Math.min(ocr.done + 1, ocr.total), tot: ocr.total })}
+                </p>
+              ) : (
+                importMsg && (
+                  <>
+                    <p className={importMsg.ok ? 'ok small' : 'error small'}>{importMsg.text}</p>
+                    {importMsg.ok && (
+                      <p className="small">
+                        <strong>{t('sport.shotNext')}</strong>
+                      </p>
+                    )}
+                  </>
+                )
+              )}
+            </div>
+          )}
+          <FilePick onFile={onFile} label={t('sport.pick')} sample="sport.jpg" video />
+        </>
       ) : (
         <div className="workspace">
           <div className={'stage ' + format}>

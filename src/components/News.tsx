@@ -11,6 +11,27 @@ interface Release {
 }
 export const RELEASES: Release[] = [
   {
+    id: '2026-11-26',
+    items: {
+      it: [
+        '🎨 Nuovo look: più sportivo, più leggibile',
+        '⚡ Carichi la foto direttamente dalla home, e con uno screenshot di Strava o Garmin i numeri si compilano da soli',
+      ],
+      en: [
+        '🎨 New look: sportier and easier to read',
+        '⚡ Load your photo straight from the home page, and a Strava or Garmin screenshot fills in your stats',
+      ],
+      de: [
+        '🎨 Neuer Look: sportlicher und besser lesbar',
+        '⚡ Lade dein Foto direkt von der Startseite, und ein Strava- oder Garmin-Screenshot füllt die Daten aus',
+      ],
+      fr: [
+        '🎨 Nouveau look : plus sportif, plus lisible',
+        '⚡ Charge ta photo directement depuis l’accueil, et une capture Strava ou Garmin remplit tes données',
+      ],
+    },
+  },
+  {
     id: '2026-11-25b',
     items: {
       it: [
